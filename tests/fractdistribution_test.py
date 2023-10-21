@@ -29,6 +29,8 @@ def fractdistribution_client(
 
 
 def test_says_hello(fractdistribution_client: ApplicationClient) -> None:
-    result = fractdistribution_client.call(fractdistribution_contract.hello, name="World")
+    result = fractdistribution_client.call(
+        fractdistribution_contract.hello, name="World"
+    )
 
     assert result.return_value == "Hello, World"

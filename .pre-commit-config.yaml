@@ -1,15 +1,29 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: check-yaml
+        args: [--unsafe]
+    -   id: end-of-file-fixer
+        exclude: ^smart_contracts/artifacts/
+    -   id: trailing-whitespace
+        exclude: ^smart_contracts/artifacts/
   - repo: local
     hooks:
-      
-      - id: black
-        name: black
-        description: "Black: The uncompromising Python code formatter"
-        entry: poetry run black
+      - id: flake8
+        name: Flake8
+        description: This hook runs flake8 within our project's environment.
+        entry: flake8
         language: system
-        minimum_pre_commit_version: 2.9.2
+        types: [python]
         require_serial: true
-        types_or: [ python, pyi ]
-      
-      
-      
+        exclude: ^smart_contracts/artifacts/
+
+      - id: black
+        name: Black
+        description: Run black
+        entry: black
+        language: system
+        'types_or': [ python, pyi ]
+        require_serial: true
+        exclude: ^smart_contracts/artifacts/

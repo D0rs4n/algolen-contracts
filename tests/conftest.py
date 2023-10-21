@@ -1,10 +1,7 @@
 from pathlib import Path
 
 import pytest
-from algokit_utils import (
-    get_algod_client,
-    is_localnet,
-)
+from algokit_utils import get_algod_client, is_localnet
 from algosdk.v2client.algod import AlgodClient
 from dotenv import load_dotenv
 

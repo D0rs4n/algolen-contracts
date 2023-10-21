@@ -10,10 +10,12 @@ from algokit_utils import (
     get_account,
     get_algod_client,
     get_indexer_client,
+    network_clients,
 )
 from algosdk.util import algos_to_microalgos
 from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +29,12 @@ def deploy(
 ) -> None:
     # get clients
     # by default client configuration is loaded from environment variables
-    algod_client = get_algod_client()
-    indexer_client = get_indexer_client()
+    algod_client = get_algod_client(
+        network_clients.get_default_localnet_config("algod")
+    )
+    indexer_client = get_indexer_client(
+        network_clients.get_default_localnet_config("indexer")
+    )
 
     # get app spec
     app_spec = ApplicationSpecification.from_json(app_spec_path.read_text())

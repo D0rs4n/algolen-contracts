@@ -45,15 +45,12 @@ jobs:
           # --ignore-vuln "GHSA-hcpj-qp55-gfph" # GitPython vulnerability, dev only dependency
           poetry run pip-audit
 
-      - name: Check formatting with Black
-        run: |
-          # stop the build if there are files that don't meet formatting requirements
-          poetry run black --check .
+      - name: Run pre-commit hooks
+        run: SKIP=flake8 poetry run pre-commit run --all-files
 
-      - name: Check linting with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          poetry run flake8 .
+      - name: Run flake8
+        run: "poetry run flake8 \
+      --format='::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s'"
 
       - name: Run tests
         shell: bash
