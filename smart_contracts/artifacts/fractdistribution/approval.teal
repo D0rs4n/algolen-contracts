@@ -1,16 +1,19 @@
 #pragma version 8
-intcblock 0 1
-bytecblock 0x
+intcblock 0 1 4
 txn NumAppArgs
 intc_0 // 0
 ==
-bnz main_l4
+bnz main_l6
 txna ApplicationArgs 0
-pushbytes 0x02bece11 // "hello(string)string"
+pushbytes 0x45a86101 // "init_fractic_nft_flow(axfer)void"
 ==
-bnz main_l3
+bnz main_l5
+txna ApplicationArgs 0
+pushbytes 0x2edef112 // "opt_in_to_asset(pay)bool"
+==
+bnz main_l4
 err
-main_l3:
+main_l4:
 txn OnCompletion
 intc_0 // NoOp
 ==
@@ -19,24 +22,36 @@ intc_0 // 0
 !=
 &&
 assert
-callsub hellocaster_3
+callsub optintoassetcaster_5
 intc_1 // 1
 return
-main_l4:
+main_l5:
 txn OnCompletion
 intc_0 // NoOp
 ==
-bnz main_l10
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub initfracticnftflowcaster_4
+intc_1 // 1
+return
+main_l6:
 txn OnCompletion
-pushint 4 // UpdateApplication
+intc_0 // NoOp
 ==
-bnz main_l9
+bnz main_l12
+txn OnCompletion
+intc_2 // UpdateApplication
+==
+bnz main_l11
 txn OnCompletion
 pushint 5 // DeleteApplication
 ==
-bnz main_l8
+bnz main_l10
 err
-main_l8:
+main_l10:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -44,7 +59,7 @@ assert
 callsub delete_1
 intc_1 // 1
 return
-main_l9:
+main_l11:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -52,7 +67,7 @@ assert
 callsub update_0
 intc_1 // 1
 return
-main_l10:
+main_l12:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -86,36 +101,106 @@ pushint TMPL_DELETABLE // TMPL_DELETABLE
 assert
 retsub
 
-// hello
-hello_2:
+// init_fractic_nft_flow
+initfracticnftflow_2:
+proto 1 0
+retsub
+
+// opt_in_to_asset
+optintoasset_3:
 proto 1 1
-bytec_0 // ""
-pushbytes 0x48656c6c6f2c20 // "Hello, "
+intc_0 // 0
+txn NumAssets
+intc_0 // 0
+==
+!
+assert
+txna Assets 0
+asset_params_get AssetDecimals
+store 1
+store 0
+load 1
+assert
+load 0
+intc_0 // 0
+==
+assert
+txna Assets 0
+asset_params_get AssetTotal
+store 3
+store 2
+load 3
+assert
+load 2
+intc_1 // 1
+==
+assert
 frame_dig -1
-extract 2 0
-concat
-frame_bury 0
-frame_dig 0
-len
+gtxns Sender
+txn Sender
+==
+assert
+frame_dig -1
+gtxns Receiver
+global CurrentApplicationAddress
+==
+assert
+frame_dig -1
+gtxns Amount
+pushint 5000000 // 5000000
+==
+assert
+txna Assets 0
 itob
-extract 6 0
-frame_dig 0
-concat
+box_del
+pop
+txna Assets 0
+itob
+txn Sender
+box_put
+intc_1 // 1
 frame_bury 0
 retsub
 
-// hello_caster
-hellocaster_3:
+// init_fractic_nft_flow_caster
+initfracticnftflowcaster_4:
 proto 0 0
-bytec_0 // ""
+intc_0 // 0
+txn GroupIndex
+intc_1 // 1
+-
+frame_bury 0
+frame_dig 0
+gtxns TypeEnum
+intc_2 // axfer
+==
+assert
+frame_dig 0
+callsub initfracticnftflow_2
+retsub
+
+// opt_in_to_asset_caster
+optintoassetcaster_5:
+proto 0 0
+intc_0 // 0
 dup
-txna ApplicationArgs 1
+txn GroupIndex
+intc_1 // 1
+-
 frame_bury 1
 frame_dig 1
-callsub hello_2
+gtxns TypeEnum
+intc_1 // pay
+==
+assert
+frame_dig 1
+callsub optintoasset_3
 frame_bury 0
 pushbytes 0x151f7c75 // 0x151f7c75
+pushbytes 0x00 // 0x00
+intc_0 // 0
 frame_dig 0
+setbit
 concat
 log
 retsub
