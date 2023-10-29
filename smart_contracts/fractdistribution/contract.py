@@ -31,7 +31,7 @@ def delete() -> pt.Expr:
 def init_fractic_nft_flow(
     assert_transfer_txn: pt.abi.AssetTransferTransaction,
     time_limit: pt.abi.Uint64,
-    max_fraction: pt.abi.Uint8,
+    max_fraction: pt.abi.Uint64,
     *,
     output: pt.abi.Bool,
 ) -> pt.Expr:
@@ -49,7 +49,21 @@ def init_fractic_nft_flow(
             app.state.deposits[pt.Itob(pt.Txn.assets[0])].get() == pt.Txn.sender()
         ),
         (addr := pt.abi.make(pt.abi.Address)).set(pt.Txn.sender()),
-        (new_pool := FracticNFTPool()).set(time_limit, addr, max_fraction),
+        (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.Txn.assets[0].index),
+        pt.InnerTxnBuilder.Execute(
+            {
+                pt.TxnField.type_enum: pt.TxnType.AssetConfig,
+                pt.TxnField.config_asset_default_frozen: pt.Int(0),
+                pt.TxnField.config_asset_unit_name: pt.Bytes("FRC"),
+                pt.TxnField.config_asset_manager: pt.Global.current_application_address(),
+                pt.TxnField.config_asset_reserve: pt.Global.current_application_address(),
+                pt.TxnField.config_asset_clawback: pt.Global.current_application_address(),
+                pt.TxnField.config_asset_total: max_fraction.get(),
+                pt.TxnField.config_asset_decimals: pt.Int(0),
+            }
+        ),
+        (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
+        (new_pool := FracticNFTPool()).set(time_limit, addr, max_fraction, asset_id),
         (app.state.pools[pt.Itob(pt.Txn.assets[0])]).set(new_pool),
         (output.set(True)),
     )
