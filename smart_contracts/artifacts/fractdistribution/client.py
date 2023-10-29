@@ -21,7 +21,7 @@ from algosdk.atomic_transaction_composer import (
 
 _APP_SPEC_JSON = r"""{
     "hints": {
-        "init_fractic_nft_flow(axfer)void": {
+        "init_fractic_nft_flow(axfer,uint64,uint8)bool": {
             "call_config": {
                 "no_op": "CALL"
             }
@@ -33,7 +33,7 @@ _APP_SPEC_JSON = r"""{
         }
     },
     "source": {
-        "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0CnR4biBOdW1BcHBBcmdzCmludGNfMCAvLyAwCj09CmJueiBtYWluX2w2CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4NDVhODYxMDEgLy8gImluaXRfZnJhY3RpY19uZnRfZmxvdyhheGZlcil2b2lkIgo9PQpibnogbWFpbl9sNQp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweDJlZGVmMTEyIC8vICJvcHRfaW5fdG9fYXNzZXQocGF5KWJvb2wiCj09CmJueiBtYWluX2w0CmVycgptYWluX2w0Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIG9wdGludG9hc3NldGNhc3Rlcl81CmludGNfMSAvLyAxCnJldHVybgptYWluX2w1Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGluaXRmcmFjdGljbmZ0Zmxvd2Nhc3Rlcl80CmludGNfMSAvLyAxCnJldHVybgptYWluX2w2Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wxMgp0eG4gT25Db21wbGV0aW9uCmludGNfMiAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sMTEKdHhuIE9uQ29tcGxldGlvbgpwdXNoaW50IDUgLy8gRGVsZXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDEwCmVycgptYWluX2wxMDoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzEKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDExOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiB1cGRhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sMTI6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCj09CmFzc2VydAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIHVwZGF0ZQp1cGRhdGVfMDoKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX1VQREFUQUJMRSAvLyBUTVBMX1VQREFUQUJMRQovLyBDaGVjayBhcHAgaXMgdXBkYXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGRlbGV0ZQpkZWxldGVfMToKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX0RFTEVUQUJMRSAvLyBUTVBMX0RFTEVUQUJMRQovLyBDaGVjayBhcHAgaXMgZGVsZXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGluaXRfZnJhY3RpY19uZnRfZmxvdwppbml0ZnJhY3RpY25mdGZsb3dfMjoKcHJvdG8gMSAwCnJldHN1YgoKLy8gb3B0X2luX3RvX2Fzc2V0Cm9wdGludG9hc3NldF8zOgpwcm90byAxIDEKaW50Y18wIC8vIDAKdHhuIE51bUFzc2V0cwppbnRjXzAgLy8gMAo9PQohCmFzc2VydAp0eG5hIEFzc2V0cyAwCmFzc2V0X3BhcmFtc19nZXQgQXNzZXREZWNpbWFscwpzdG9yZSAxCnN0b3JlIDAKbG9hZCAxCmFzc2VydApsb2FkIDAKaW50Y18wIC8vIDAKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKYXNzZXRfcGFyYW1zX2dldCBBc3NldFRvdGFsCnN0b3JlIDMKc3RvcmUgMgpsb2FkIDMKYXNzZXJ0CmxvYWQgMgppbnRjXzEgLy8gMQo9PQphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIFNlbmRlcgp0eG4gU2VuZGVyCj09CmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKcHVzaGludCA1MDAwMDAwIC8vIDUwMDAwMDAKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKaXRvYgpib3hfZGVsCnBvcAp0eG5hIEFzc2V0cyAwCml0b2IKdHhuIFNlbmRlcgpib3hfcHV0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGluaXRfZnJhY3RpY19uZnRfZmxvd19jYXN0ZXIKaW5pdGZyYWN0aWNuZnRmbG93Y2FzdGVyXzQ6CnByb3RvIDAgMAppbnRjXzAgLy8gMAp0eG4gR3JvdXBJbmRleAppbnRjXzEgLy8gMQotCmZyYW1lX2J1cnkgMApmcmFtZV9kaWcgMApndHhucyBUeXBlRW51bQppbnRjXzIgLy8gYXhmZXIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAwCmNhbGxzdWIgaW5pdGZyYWN0aWNuZnRmbG93XzIKcmV0c3ViCgovLyBvcHRfaW5fdG9fYXNzZXRfY2FzdGVyCm9wdGludG9hc3NldGNhc3Rlcl81Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwCnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMSAvLyBwYXkKPT0KYXNzZXJ0CmZyYW1lX2RpZyAxCmNhbGxzdWIgb3B0aW50b2Fzc2V0XzMKZnJhbWVfYnVyeSAwCnB1c2hieXRlcyAweDE1MWY3Yzc1IC8vIDB4MTUxZjdjNzUKcHVzaGJ5dGVzIDB4MDAgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWI=",
+        "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0CmJ5dGVjYmxvY2sgMHgwMCAweCAweDE1MWY3Yzc1CnR4biBOdW1BcHBBcmdzCmludGNfMCAvLyAwCj09CmJueiBtYWluX2w2CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4MWEzMWJjODMgLy8gImluaXRfZnJhY3RpY19uZnRfZmxvdyhheGZlcix1aW50NjQsdWludDgpYm9vbCIKPT0KYm56IG1haW5fbDUKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgyZWRlZjExMiAvLyAib3B0X2luX3RvX2Fzc2V0KHBheSlib29sIgo9PQpibnogbWFpbl9sNAplcnIKbWFpbl9sNDoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBvcHRpbnRvYXNzZXRjYXN0ZXJfNQppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sNToKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBpbml0ZnJhY3RpY25mdGZsb3djYXN0ZXJfNAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sNjoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQpibnogbWFpbl9sMTIKdHhuIE9uQ29tcGxldGlvbgppbnRjXzIgLy8gVXBkYXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDExCnR4biBPbkNvbXBsZXRpb24KcHVzaGludCA1IC8vIERlbGV0ZUFwcGxpY2F0aW9uCj09CmJueiBtYWluX2wxMAplcnIKbWFpbl9sMTA6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CmFzc2VydApjYWxsc3ViIGRlbGV0ZV8xCmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMToKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgdXBkYXRlXzAKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEyOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAo9PQphc3NlcnQKaW50Y18xIC8vIDEKcmV0dXJuCgovLyB1cGRhdGUKdXBkYXRlXzA6CnByb3RvIDAgMAp0eG4gU2VuZGVyCmdsb2JhbCBDcmVhdG9yQWRkcmVzcwo9PQovLyB1bmF1dGhvcml6ZWQKYXNzZXJ0CnB1c2hpbnQgVE1QTF9VUERBVEFCTEUgLy8gVE1QTF9VUERBVEFCTEUKLy8gQ2hlY2sgYXBwIGlzIHVwZGF0YWJsZQphc3NlcnQKcmV0c3ViCgovLyBkZWxldGUKZGVsZXRlXzE6CnByb3RvIDAgMAp0eG4gU2VuZGVyCmdsb2JhbCBDcmVhdG9yQWRkcmVzcwo9PQovLyB1bmF1dGhvcml6ZWQKYXNzZXJ0CnB1c2hpbnQgVE1QTF9ERUxFVEFCTEUgLy8gVE1QTF9ERUxFVEFCTEUKLy8gQ2hlY2sgYXBwIGlzIGRlbGV0YWJsZQphc3NlcnQKcmV0c3ViCgovLyBpbml0X2ZyYWN0aWNfbmZ0X2Zsb3cKaW5pdGZyYWN0aWNuZnRmbG93XzI6CnByb3RvIDMgMQppbnRjXzAgLy8gMApieXRlY18xIC8vICIiCmR1cAppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMSAvLyAiIgpkdXAKdHhuYSBBc3NldHMgMApmcmFtZV9kaWcgLTMKZ3R4bnMgWGZlckFzc2V0Cj09CmFzc2VydAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2xlbgpzdG9yZSAxCnN0b3JlIDAKbG9hZCAxCmFzc2VydAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2dldApzdG9yZSAzCnN0b3JlIDIKbG9hZCAzCmFzc2VydApsb2FkIDIKdHhuIFNlbmRlcgo9PQphc3NlcnQKdHhuIFNlbmRlcgpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKbGVuCnB1c2hpbnQgMzIgLy8gMzIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMgppdG9iCmZyYW1lX2RpZyAxCmNvbmNhdApieXRlY18wIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIC0xCnNldGJ5dGUKY29uY2F0CmZyYW1lX2J1cnkgMgp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2RlbApwb3AKdHhuYSBBc3NldHMgMAppdG9iCmZyYW1lX2RpZyAyCmJveF9wdXQKaW50Y18xIC8vIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gb3B0X2luX3RvX2Fzc2V0Cm9wdGludG9hc3NldF8zOgpwcm90byAxIDEKaW50Y18wIC8vIDAKdHhuYSBBc3NldHMgMAppdG9iCmJveF9sZW4Kc3RvcmUgNQpzdG9yZSA0CmxvYWQgNQohCmFzc2VydAp0eG4gTnVtQXNzZXRzCmludGNfMCAvLyAwCj09CiEKYXNzZXJ0CnR4bmEgQXNzZXRzIDAKYXNzZXRfcGFyYW1zX2dldCBBc3NldERlY2ltYWxzCnN0b3JlIDcKc3RvcmUgNgpsb2FkIDcKYXNzZXJ0CmxvYWQgNgppbnRjXzAgLy8gMAo9PQphc3NlcnQKdHhuYSBBc3NldHMgMAphc3NldF9wYXJhbXNfZ2V0IEFzc2V0VG90YWwKc3RvcmUgOQpzdG9yZSA4CmxvYWQgOQphc3NlcnQKbG9hZCA4CmludGNfMSAvLyAxCj09CmFzc2VydAp0eG5hIEFzc2V0cyAwCmFzc2V0X3BhcmFtc19nZXQgQXNzZXRDcmVhdG9yCnN0b3JlIDExCnN0b3JlIDEwCmxvYWQgMTEKYXNzZXJ0CmxvYWQgMTAKdHhuIFNlbmRlcgo9PQphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIFNlbmRlcgp0eG4gU2VuZGVyCj09CmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKcHVzaGludCA1MDAwMDAwIC8vIDUwMDAwMDAKPT0KYXNzZXJ0Cml0eG5fYmVnaW4KaW50Y18yIC8vIGF4ZmVyCml0eG5fZmllbGQgVHlwZUVudW0KaW50Y18wIC8vIDAKaXR4bl9maWVsZCBBc3NldEFtb3VudApnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwppdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKdHhuYSBBc3NldHMgMAppdHhuX2ZpZWxkIFhmZXJBc3NldAppdHhuX3N1Ym1pdAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2RlbApwb3AKdHhuYSBBc3NldHMgMAppdG9iCnR4biBTZW5kZXIKYm94X3B1dAppbnRjXzEgLy8gMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBpbml0X2ZyYWN0aWNfbmZ0X2Zsb3dfY2FzdGVyCmluaXRmcmFjdGljbmZ0Zmxvd2Nhc3Rlcl80Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwbiAzCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKYnRvaQpmcmFtZV9idXJ5IDIKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgppbnRjXzAgLy8gMApnZXRieXRlCmZyYW1lX2J1cnkgMwp0eG4gR3JvdXBJbmRleAppbnRjXzEgLy8gMQotCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpndHhucyBUeXBlRW51bQppbnRjXzIgLy8gYXhmZXIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAxCmZyYW1lX2RpZyAyCmZyYW1lX2RpZyAzCmNhbGxzdWIgaW5pdGZyYWN0aWNuZnRmbG93XzIKZnJhbWVfYnVyeSAwCmJ5dGVjXzIgLy8gMHgxNTFmN2M3NQpieXRlY18wIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIDAKc2V0Yml0CmNvbmNhdApsb2cKcmV0c3ViCgovLyBvcHRfaW5fdG9fYXNzZXRfY2FzdGVyCm9wdGludG9hc3NldGNhc3Rlcl81Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwCnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMSAvLyBwYXkKPT0KYXNzZXJ0CmZyYW1lX2RpZyAxCmNhbGxzdWIgb3B0aW50b2Fzc2V0XzMKZnJhbWVfYnVyeSAwCmJ5dGVjXzIgLy8gMHgxNTFmN2M3NQpieXRlY18wIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIDAKc2V0Yml0CmNvbmNhdApsb2cKcmV0c3Vi",
         "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
     },
     "state": {
@@ -65,10 +65,18 @@ _APP_SPEC_JSON = r"""{
                     {
                         "type": "axfer",
                         "name": "assert_transfer_txn"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "time_limit"
+                    },
+                    {
+                        "type": "uint8",
+                        "name": "max_fraction"
                     }
                 ],
                 "returns": {
-                    "type": "void"
+                    "type": "bool"
                 },
                 "desc": "The entry contract method for Fractic\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
             },
@@ -169,15 +177,17 @@ def _convert_deploy_args(
 
 
 @dataclasses.dataclass(kw_only=True)
-class InitFracticNftFlowArgs(_ArgsBase[None]):
+class InitFracticNftFlowArgs(_ArgsBase[bool]):
     """The entry contract method for Fractic
     It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"""
 
     assert_transfer_txn: TransactionWithSigner
+    time_limit: int
+    max_fraction: int
 
     @staticmethod
     def method() -> str:
-        return "init_fractic_nft_flow(axfer)void"
+        return "init_fractic_nft_flow(axfer,uint64,uint8)bool"
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -208,19 +218,25 @@ class Composer:
         self,
         *,
         assert_transfer_txn: TransactionWithSigner,
+        time_limit: int,
+        max_fraction: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
         """The entry contract method for Fractic
         It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
         
-        Adds a call to `init_fractic_nft_flow(axfer)void` ABI method
+        Adds a call to `init_fractic_nft_flow(axfer,uint64,uint8)bool` ABI method
         
         :param TransactionWithSigner assert_transfer_txn: The `assert_transfer_txn` ABI parameter
+        :param int time_limit: The `time_limit` ABI parameter
+        :param int max_fraction: The `max_fraction` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
         args = InitFracticNftFlowArgs(
             assert_transfer_txn=assert_transfer_txn,
+            time_limit=time_limit,
+            max_fraction=max_fraction,
         )
         self.app_client.compose_call(
             self.atc,
@@ -455,19 +471,25 @@ class FractdistributionClient:
         self,
         *,
         assert_transfer_txn: TransactionWithSigner,
+        time_limit: int,
+        max_fraction: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
-    ) -> algokit_utils.ABITransactionResponse[None]:
+    ) -> algokit_utils.ABITransactionResponse[bool]:
         """The entry contract method for Fractic
         It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
         
-        Calls `init_fractic_nft_flow(axfer)void` ABI method
+        Calls `init_fractic_nft_flow(axfer,uint64,uint8)bool` ABI method
         
         :param TransactionWithSigner assert_transfer_txn: The `assert_transfer_txn` ABI parameter
+        :param int time_limit: The `time_limit` ABI parameter
+        :param int max_fraction: The `max_fraction` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
-        :returns algokit_utils.ABITransactionResponse[None]: The result of the transaction"""
+        :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
 
         args = InitFracticNftFlowArgs(
             assert_transfer_txn=assert_transfer_txn,
+            time_limit=time_limit,
+            max_fraction=max_fraction,
         )
         result = self.app_client.call(
             call_abi_method=args.method(),

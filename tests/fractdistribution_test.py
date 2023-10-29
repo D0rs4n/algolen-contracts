@@ -4,6 +4,8 @@ from algokit_utils import (
     ApplicationSpecification,
     get_localnet_default_account,
     LogicError,
+    ensure_funded,
+    EnsureBalanceParameters,
 )
 from algosdk.v2client.algod import AlgodClient
 from algosdk import transaction
@@ -28,6 +30,14 @@ def fractdistribution_client(
         template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
     client.create()
+    ensure_funded(
+        algod_client,
+        EnsureBalanceParameters(
+            account_to_fund=get_localnet_default_account(algod_client),
+            min_spending_balance_micro_algos=5000000,
+            min_funding_increment_micro_algos=5000000,
+        ),
+    )
     return client
 
 
@@ -118,6 +128,47 @@ def test_opt_in_nft_with_invalid_params(
         )
 
 
-# fractdistribution_client.call(
-#   "opt_in_to_asset",
-# )
+@pytest.mark.parametrize("total", [1])
+def test_init_fractic_nft_flow(
+    algod_client: AlgodClient,
+    fractdistribution_client: ApplicationClient,
+    create_valid_nft: int,
+):
+    signer = get_localnet_default_account(algod_client)
+
+    params = algod_client.suggested_params()
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=fractdistribution_client.app_address,
+        amt=5000000,
+    )
+
+    fractdistribution_client.call(
+        "opt_in_to_asset",
+        deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        transaction_parameters={
+            "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+            "foreign_assets": [create_valid_nft],
+        },
+    )
+
+    xfer_txn = transaction.AssetTransferTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=fractdistribution_client.app_address,
+        amt=1,
+        index=create_valid_nft,
+    )
+
+    assert fractdistribution_client.call(
+        "init_fractic_nft_flow",
+        assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        time_limit=10000,
+        max_fraction=123,
+        transaction_parameters={
+            "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
