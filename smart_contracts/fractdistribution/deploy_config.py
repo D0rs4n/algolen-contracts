@@ -36,10 +36,3 @@ def deploy(
         allow_delete=not is_mainnet,
         allow_update=not is_mainnet,
     )
-
-    name = "world"
-    response = app_client.hello(name=name)
-    logger.info(
-        f"Called hello on {app_spec.contract.name} ({app_client.app_id}) "
-        f"with name={name}, received: {response.return_value}"
-    )

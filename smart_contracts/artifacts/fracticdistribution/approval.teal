@@ -146,6 +146,18 @@ pushint 32 // 32
 assert
 intc_0 // 0
 frame_bury 2
+txna Assets 0
+asset_params_get AssetURL
+store 5
+store 4
+load 5
+assert
+txna Assets 0
+asset_params_get AssetMetadataHash
+store 7
+store 6
+load 7
+assert
 itxn_begin
 pushint 3 // acfg
 itxn_field TypeEnum
@@ -163,6 +175,12 @@ frame_dig -1
 itxn_field ConfigAssetTotal
 intc_0 // 0
 itxn_field ConfigAssetDecimals
+load 4
+itxn_field ConfigAssetURL
+load 6
+itxn_field ConfigAssetMetadataHash
+pushbytes 0x7b227374616e64617264223a20226172633639227d // "{\"standard\": \"arc69\"}"
+itxn_field Note
 itxn_submit
 itxn CreatedAssetID
 frame_bury 3
@@ -196,9 +214,9 @@ intc_0 // 0
 txna Assets 0
 itob
 box_len
-store 5
-store 4
-load 5
+store 9
+store 8
+load 9
 !
 assert
 txn NumAssets
@@ -208,31 +226,31 @@ intc_0 // 0
 assert
 txna Assets 0
 asset_params_get AssetDecimals
-store 7
-store 6
-load 7
-assert
-load 6
-intc_0 // 0
-==
-assert
-txna Assets 0
-asset_params_get AssetTotal
-store 9
-store 8
-load 9
-assert
-load 8
-intc_1 // 1
-==
-assert
-txna Assets 0
-asset_params_get AssetCreator
 store 11
 store 10
 load 11
 assert
 load 10
+intc_0 // 0
+==
+assert
+txna Assets 0
+asset_params_get AssetTotal
+store 13
+store 12
+load 13
+assert
+load 12
+intc_1 // 1
+==
+assert
+txna Assets 0
+asset_params_get AssetCreator
+store 15
+store 14
+load 15
+assert
+load 14
 txn Sender
 ==
 assert
@@ -248,7 +266,7 @@ global CurrentApplicationAddress
 assert
 frame_dig -1
 gtxns Amount
-pushint 5000000 // 5000000
+pushint 100000 // 100000
 ==
 assert
 itxn_begin
