@@ -1,0 +1,41 @@
+{
+    "name": "fracticdistribution",
+    "methods": [
+        {
+            "name": "init_fractic_nft_flow",
+            "args": [
+                {
+                    "type": "axfer",
+                    "name": "assert_transfer_txn"
+                },
+                {
+                    "type": "uint64",
+                    "name": "time_limit"
+                },
+                {
+                    "type": "uint64",
+                    "name": "max_fraction"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            },
+            "desc": "The entry contract method for Fractic\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
+        },
+        {
+            "name": "opt_in_to_asset",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "deposit_payment_txn"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            },
+            "desc": "An opt-in contract method\nThat will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied"
+        }
+    ],
+    "networks": {},
+    "desc": "Fractic Distribution Main Contract"
+}

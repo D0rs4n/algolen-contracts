@@ -5,7 +5,7 @@ from .data_utils import MappingState, FracticNFTPool
 
 
 app = beaker.Application(
-    "fractdistribution",
+    "fracticdistribution",
     descr="Fractic Distribution Main Contract",
     state=MappingState(),
 )
@@ -50,6 +50,10 @@ def init_fractic_nft_flow(
         ),
         (addr := pt.abi.make(pt.abi.Address)).set(pt.Txn.sender()),
         (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.Txn.assets[0].index),
+        (original_asset_url := pt.AssetParam.url(pt.Txn.assets[0])),
+        pt.Assert(original_asset_url.hasValue()),
+        (original_asset_hash := pt.AssetParam.metadataHash(pt.Txn.assets[0])),
+        pt.Assert(original_asset_hash.hasValue()),
         pt.InnerTxnBuilder.Execute(
             {
                 pt.TxnField.type_enum: pt.TxnType.AssetConfig,
@@ -60,6 +64,8 @@ def init_fractic_nft_flow(
                 pt.TxnField.config_asset_clawback: pt.Global.current_application_address(),
                 pt.TxnField.config_asset_total: max_fraction.get(),
                 pt.TxnField.config_asset_decimals: pt.Int(0),
+                pt.TxnField.config_asset_url: original_asset_url.value(),
+                pt.TxnField.config_asset_metadata_hash: original_asset_hash.value(),
             }
         ),
         (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
@@ -98,7 +104,7 @@ def opt_in_to_asset(
             == pt.Global.current_application_address()
         ),
         # the Deposit is 5 Algos = 5000000 microAlgos
-        pt.Assert(deposit_payment_txn.get().amount() == pt.Int(5000000)),
+        pt.Assert(deposit_payment_txn.get().amount() == pt.Int(100000)),
         # Record the deposit
         pt.InnerTxnBuilder.Execute(
             {

@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 from algokit_utils import (
     ApplicationClient,
@@ -33,9 +35,9 @@ def fractdistribution_client(
     ensure_funded(
         algod_client,
         EnsureBalanceParameters(
-            account_to_fund=get_localnet_default_account(algod_client),
-            min_spending_balance_micro_algos=5000000,
-            min_funding_increment_micro_algos=5000000,
+            account_to_fund=client.app_address,
+            min_spending_balance_micro_algos=10000000000,
+            min_funding_increment_micro_algos=1000000000,
         ),
     )
     return client
@@ -51,6 +53,10 @@ def create_valid_nft(
     signer = get_localnet_default_account(algod_client)
     sp = algod_client.suggested_params()
 
+    metadata = {"data": "data"}
+
+    metadata_hash = hashlib.sha256(str(metadata).encode()).digest()
+
     # Construct an NFT that satisfies Fractic criteria
     txn = transaction.AssetConfigTxn(
         sender=signer.address,
@@ -62,7 +68,8 @@ def create_valid_nft(
         reserve=signer.address,
         freeze=signer.address,
         clawback=signer.address,
-        url="",
+        url="random.url",
+        metadata_hash=metadata_hash,
         total=total,
         decimals=0,
     )
@@ -88,7 +95,7 @@ def test_opt_in_nft_valid_nft(
         sender=signer.address,
         sp=params,
         receiver=fractdistribution_client.app_address,
-        amt=5000000,
+        amt=100000,
     )
 
     assert fractdistribution_client.call(
@@ -115,7 +122,7 @@ def test_opt_in_nft_with_invalid_params(
         sender=signer.address,
         sp=params,
         receiver=fractdistribution_client.app_address,
-        amt=5000000,
+        amt=100000,
     )
     with pytest.raises(LogicError):
         fractdistribution_client.call(
@@ -142,7 +149,7 @@ def test_init_fractic_nft_flow(
         sender=signer.address,
         sp=params,
         receiver=fractdistribution_client.app_address,
-        amt=5000000,
+        amt=100000,
     )
 
     fractdistribution_client.call(
