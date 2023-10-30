@@ -179,6 +179,8 @@ load 4
 itxn_field ConfigAssetURL
 load 6
 itxn_field ConfigAssetMetadataHash
+pushbytes 0x7b227374616e64617264223a20226172633639227d // "{\"standard\": \"arc69\"}"
+itxn_field Note
 itxn_submit
 itxn CreatedAssetID
 frame_bury 3

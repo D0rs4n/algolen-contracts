@@ -66,6 +66,7 @@ def init_fractic_nft_flow(
                 pt.TxnField.config_asset_decimals: pt.Int(0),
                 pt.TxnField.config_asset_url: original_asset_url.value(),
                 pt.TxnField.config_asset_metadata_hash: original_asset_hash.value(),
+                pt.TxnField.note: pt.Bytes('{"standard": "arc69"}'),
             }
         ),
         (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
