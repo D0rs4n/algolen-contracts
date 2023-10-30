@@ -1,0 +1,30 @@
+{
+    "name": "dao",
+    "methods": [
+        {
+            "name": "add_proposal",
+            "args": [
+                {
+                    "type": "(string,string,uint64,uint64)",
+                    "name": "proposal"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        },
+        {
+            "name": "hello",
+            "args": [
+                {
+                    "type": "string",
+                    "name": "name"
+                }
+            ],
+            "returns": {
+                "type": "string"
+            }
+        }
+    ],
+    "networks": {}
+}

@@ -1,0 +1,187 @@
+#pragma version 8
+intcblock 0 1
+bytecblock 0x637572725f6964 0x
+txn NumAppArgs
+intc_0 // 0
+==
+bnz main_l6
+txna ApplicationArgs 0
+pushbytes 0x6b97814a // "add_proposal((string,string,uint64,uint64))void"
+==
+bnz main_l5
+txna ApplicationArgs 0
+pushbytes 0x02bece11 // "hello(string)string"
+==
+bnz main_l4
+err
+main_l4:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub hellocaster_6
+intc_1 // 1
+return
+main_l5:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub addproposalcaster_5
+intc_1 // 1
+return
+main_l6:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l12
+txn OnCompletion
+pushint 4 // UpdateApplication
+==
+bnz main_l11
+txn OnCompletion
+pushint 5 // DeleteApplication
+==
+bnz main_l10
+err
+main_l10:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub delete_1
+intc_1 // 1
+return
+main_l11:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub update_0
+intc_1 // 1
+return
+main_l12:
+txn ApplicationID
+intc_0 // 0
+==
+assert
+callsub create_2
+intc_1 // 1
+return
+
+// update
+update_0:
+proto 0 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+pushint TMPL_UPDATABLE // TMPL_UPDATABLE
+// Check app is updatable
+assert
+retsub
+
+// delete
+delete_1:
+proto 0 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+pushint TMPL_DELETABLE // TMPL_DELETABLE
+// Check app is deletable
+assert
+retsub
+
+// create
+create_2:
+proto 0 0
+bytec_0 // "curr_id"
+intc_0 // 0
+app_global_put
+pushbytes 0x676f76 // "gov"
+bytec_1 // ""
+app_global_put
+pushbytes 0x6d61785f6475726174696f6e // "max_duration"
+intc_0 // 0
+app_global_put
+pushbytes 0x6d696e5f6475726174696f6e // "min_duration"
+intc_0 // 0
+app_global_put
+pushbytes 0x6d696e5f737570706f7274 // "min_support"
+intc_0 // 0
+app_global_put
+retsub
+
+// add_proposal
+addproposal_3:
+proto 1 0
+bytec_0 // "curr_id"
+app_global_get
+box_del
+pop
+bytec_0 // "curr_id"
+app_global_get
+frame_dig -1
+box_put
+bytec_0 // "curr_id"
+bytec_0 // "curr_id"
+app_global_get
+intc_1 // 1
++
+app_global_put
+retsub
+
+// hello
+hello_4:
+proto 1 1
+bytec_1 // ""
+pushbytes 0x48656c6c6f2c20 // "Hello, "
+frame_dig -1
+extract 2 0
+concat
+frame_bury 0
+frame_dig 0
+len
+itob
+extract 6 0
+frame_dig 0
+concat
+frame_bury 0
+retsub
+
+// add_proposal_caster
+addproposalcaster_5:
+proto 0 0
+bytec_1 // ""
+txna ApplicationArgs 1
+frame_bury 0
+frame_dig 0
+callsub addproposal_3
+retsub
+
+// hello_caster
+hellocaster_6:
+proto 0 0
+bytec_1 // ""
+dup
+txna ApplicationArgs 1
+frame_bury 1
+frame_dig 1
+callsub hello_4
+frame_bury 0
+pushbytes 0x151f7c75 // 0x151f7c75
+frame_dig 0
+concat
+log
+retsub
