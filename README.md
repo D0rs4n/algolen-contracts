@@ -1,5 +1,7 @@
 # fractic-contracts
 
+## [Fractic fronted repo](https://github.com/Marci0817/fractic-frontend)
+
 This project has been generated using AlgoKit. See below for default getting started instructions.
 
 # Setup
