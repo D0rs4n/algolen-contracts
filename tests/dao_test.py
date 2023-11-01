@@ -6,6 +6,8 @@ from algokit_utils import (
 )
 from algosdk.v2client.algod import AlgodClient
 
+from algosdk import transaction
+
 from smart_contracts.dao import contract as dao
 
 
@@ -24,15 +26,11 @@ def dao_client(
         signer=get_localnet_default_account(algod_client),
         template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
-    client.create(
-
-    )
+    client.create()
     return client
 
 
 def test_says_hello(dao_client: ApplicationClient) -> None:
-    result = dao_client.call(
-        dao.hello, name="World"
-    )
+    result = dao_client.call(dao.hello, name="World")
 
     assert result.return_value == "Hello, World"

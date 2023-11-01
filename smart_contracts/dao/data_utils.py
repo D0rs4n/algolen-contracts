@@ -12,9 +12,10 @@ class Proposal(pt.abi.NamedTuple):
 
 class State:
     curr_id = GlobalStateValue(pt.TealType.uint64, default=pt.Int(0))
-    gov = GlobalStateValue(pt.TealType.bytes)
+    gov = GlobalStateValue(pt.TealType.uint64)
     min_support = GlobalStateValue(pt.TealType.uint64)
     min_duration = GlobalStateValue(pt.TealType.uint64)
     max_duration = GlobalStateValue(pt.TealType.uint64)
     proposals = BoxMapping(pt.abi.Uint64, Proposal)
     votes = BoxMapping(pt.abi.Uint64, pt.abi.Uint64)
+    deposits = BoxMapping(pt.abi.Address, pt.abi.Uint64)

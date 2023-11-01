@@ -2,6 +2,39 @@
     "name": "dao",
     "methods": [
         {
+            "name": "set_gov",
+            "args": [
+                {
+                    "type": "uint64",
+                    "name": "gov"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        },
+        {
+            "name": "gov_opt_in",
+            "args": [],
+            "returns": {
+                "type": "bool"
+            },
+            "desc": "An opt-in contract method\nThat will make the contract to opt-in to the gov token of the contract,"
+        },
+        {
+            "name": "deposit",
+            "args": [
+                {
+                    "type": "axfer",
+                    "name": "txn"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            },
+            "desc": "An deposit contract method\nThat will check whether the deposit is valid, and store the deposit in the contract's state"
+        },
+        {
             "name": "add_proposal",
             "args": [
                 {
