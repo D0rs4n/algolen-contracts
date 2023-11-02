@@ -175,7 +175,12 @@ def test_init_fractic_nft_flow(
         time_limit=10000,
         max_fraction=123,
         transaction_parameters={
-            "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+            "boxes": [
+                (
+                    fractdistribution_client.app_id,
+                    "d_".encode() + create_valid_nft.to_bytes(8, "big"),
+                )
+            ],
             "foreign_assets": [create_valid_nft],
         },
     ).return_value
