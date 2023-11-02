@@ -36,4 +36,3 @@ def deploy(
         allow_delete=not is_mainnet,
         allow_update=not is_mainnet,
     )
-

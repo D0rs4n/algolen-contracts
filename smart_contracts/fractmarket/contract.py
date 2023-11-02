@@ -39,15 +39,20 @@ def create_buy_order(
     return pt.Seq(
         pt.Assert(pt.Not(app.state.buy_orders[pt.Itob(order_id.get())].exists())),
         pt.Assert(pt.Not(app.state.sell_orders[pt.Itob(order_id.get())].exists())),
-        #pt.Assert(pt.AssetParam.creator(asset_id.get()) == app.state.fractic_distribution_address),
+        # pt.Assert(pt.AssetParam.creator(asset_id.get()) == app.state.fractic_distribution_address),
         pt.Assert(deposit_payment_txn.get().sender() == pt.Txn.sender()),
         pt.Assert(
             deposit_payment_txn.get().receiver()
             == pt.Global.current_application_address()
         ),
-        pt.Assert(deposit_payment_txn.get().amount() == asset_amount.get() * asset_fraction_price.get()),
+        pt.Assert(
+            deposit_payment_txn.get().amount()
+            == asset_amount.get() * asset_fraction_price.get()
+        ),
         (addr := pt.abi.make(pt.abi.Address)).set(pt.Txn.sender()),
-        (new_buy_order := FracticBuyOrder()).set(addr, asset_id, asset_amount, asset_fraction_price),
+        (new_buy_order := FracticBuyOrder()).set(
+            addr, asset_id, asset_amount, asset_fraction_price
+        ),
         (app.state.buy_orders[pt.Itob(order_id.get())]).set(new_buy_order),
         (output.set(True)),
     )
