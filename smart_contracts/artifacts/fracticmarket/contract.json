@@ -1,0 +1,35 @@
+{
+    "name": "fracticmarket",
+    "methods": [
+        {
+            "name": "create_buy_order",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "deposit_payment_txn"
+                },
+                {
+                    "type": "uint64",
+                    "name": "order_id"
+                },
+                {
+                    "type": "uint64",
+                    "name": "asset_id"
+                },
+                {
+                    "type": "uint64",
+                    "name": "asset_amount"
+                },
+                {
+                    "type": "uint64",
+                    "name": "asset_fraction_price"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        }
+    ],
+    "networks": {},
+    "desc": "Fractic Market Main Contract"
+}

@@ -1,0 +1,73 @@
+{
+    "hints": {
+        "create_buy_order(pay,uint64,uint64,uint64,uint64)bool": {
+            "call_config": {
+                "no_op": "CALL"
+            }
+        }
+    },
+    "source": {
+        "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMQpieXRlY2Jsb2NrIDB4CnR4biBOdW1BcHBBcmdzCmludGNfMCAvLyAwCj09CmJueiBtYWluX2w0CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4ZjVkZDI5MWMgLy8gImNyZWF0ZV9idXlfb3JkZXIocGF5LHVpbnQ2NCx1aW50NjQsdWludDY0LHVpbnQ2NClib29sIgo9PQpibnogbWFpbl9sMwplcnIKbWFpbl9sMzoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBjcmVhdGVidXlvcmRlcmNhc3Rlcl8zCmludGNfMSAvLyAxCnJldHVybgptYWluX2w0Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wxMAp0eG4gT25Db21wbGV0aW9uCnB1c2hpbnQgNCAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sOQp0eG4gT25Db21wbGV0aW9uCnB1c2hpbnQgNSAvLyBEZWxldGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sOAplcnIKbWFpbl9sODoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzEKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDk6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CmFzc2VydApjYWxsc3ViIHVwZGF0ZV8wCmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMDoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKPT0KYXNzZXJ0CmludGNfMSAvLyAxCnJldHVybgoKLy8gdXBkYXRlCnVwZGF0ZV8wOgpwcm90byAwIDAKdHhuIFNlbmRlcgpnbG9iYWwgQ3JlYXRvckFkZHJlc3MKPT0KLy8gdW5hdXRob3JpemVkCmFzc2VydApwdXNoaW50IFRNUExfVVBEQVRBQkxFIC8vIFRNUExfVVBEQVRBQkxFCi8vIENoZWNrIGFwcCBpcyB1cGRhdGFibGUKYXNzZXJ0CnJldHN1YgoKLy8gZGVsZXRlCmRlbGV0ZV8xOgpwcm90byAwIDAKdHhuIFNlbmRlcgpnbG9iYWwgQ3JlYXRvckFkZHJlc3MKPT0KLy8gdW5hdXRob3JpemVkCmFzc2VydApwdXNoaW50IFRNUExfREVMRVRBQkxFIC8vIFRNUExfREVMRVRBQkxFCi8vIENoZWNrIGFwcCBpcyBkZWxldGFibGUKYXNzZXJ0CnJldHN1YgoKLy8gY3JlYXRlX2J1eV9vcmRlcgpjcmVhdGVidXlvcmRlcl8yOgpwcm90byA1IDEKaW50Y18wIC8vIDAKYnl0ZWNfMCAvLyAiIgpkdXAKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCmZyYW1lX2RpZyAtNAppdG9iCmJveF9sZW4Kc3RvcmUgMQpzdG9yZSAwCmxvYWQgMQohCmFzc2VydApmcmFtZV9kaWcgLTQKaXRvYgpib3hfbGVuCnN0b3JlIDMKc3RvcmUgMgpsb2FkIDMKIQphc3NlcnQKZnJhbWVfZGlnIC01Cmd0eG5zIFNlbmRlcgp0eG4gU2VuZGVyCj09CmFzc2VydApmcmFtZV9kaWcgLTUKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtNQpndHhucyBBbW91bnQKZnJhbWVfZGlnIC0yCmZyYW1lX2RpZyAtMQoqCj09CmFzc2VydAp0eG4gU2VuZGVyCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpsZW4KcHVzaGludCAzMiAvLyAzMgo9PQphc3NlcnQKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIC0zCml0b2IKY29uY2F0CmZyYW1lX2RpZyAtMgppdG9iCmNvbmNhdApmcmFtZV9kaWcgLTEKaXRvYgpjb25jYXQKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAtNAppdG9iCmJveF9kZWwKcG9wCmZyYW1lX2RpZyAtNAppdG9iCmZyYW1lX2RpZyAyCmJveF9wdXQKaW50Y18xIC8vIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gY3JlYXRlX2J1eV9vcmRlcl9jYXN0ZXIKY3JlYXRlYnV5b3JkZXJjYXN0ZXJfMzoKcHJvdG8gMCAwCmludGNfMCAvLyAwCmR1cG4gNQp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmJ0b2kKZnJhbWVfYnVyeSAyCnR4bmEgQXBwbGljYXRpb25BcmdzIDIKYnRvaQpmcmFtZV9idXJ5IDMKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMwpidG9pCmZyYW1lX2J1cnkgNAp0eG5hIEFwcGxpY2F0aW9uQXJncyA0CmJ0b2kKZnJhbWVfYnVyeSA1CnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMSAvLyBwYXkKPT0KYXNzZXJ0CmZyYW1lX2RpZyAxCmZyYW1lX2RpZyAyCmZyYW1lX2RpZyAzCmZyYW1lX2RpZyA0CmZyYW1lX2RpZyA1CmNhbGxzdWIgY3JlYXRlYnV5b3JkZXJfMgpmcmFtZV9idXJ5IDAKcHVzaGJ5dGVzIDB4MTUxZjdjNzUgLy8gMHgxNTFmN2M3NQpwdXNoYnl0ZXMgMHgwMCAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1Yg==",
+        "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
+    },
+    "state": {
+        "global": {
+            "num_byte_slices": 0,
+            "num_uints": 0
+        },
+        "local": {
+            "num_byte_slices": 0,
+            "num_uints": 0
+        }
+    },
+    "schema": {
+        "global": {
+            "declared": {},
+            "reserved": {}
+        },
+        "local": {
+            "declared": {},
+            "reserved": {}
+        }
+    },
+    "contract": {
+        "name": "fracticmarket",
+        "methods": [
+            {
+                "name": "create_buy_order",
+                "args": [
+                    {
+                        "type": "pay",
+                        "name": "deposit_payment_txn"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "order_id"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "asset_id"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "asset_amount"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "asset_fraction_price"
+                    }
+                ],
+                "returns": {
+                    "type": "bool"
+                }
+            }
+        ],
+        "networks": {},
+        "desc": "Fractic Market Main Contract"
+    },
+    "bare_call_config": {
+        "delete_application": "CALL",
+        "no_op": "CREATE",
+        "update_application": "CALL"
+    }
+}

@@ -14,11 +14,11 @@ def deploy(
     app_spec: algokit_utils.ApplicationSpecification,
     deployer: algokit_utils.Account,
 ) -> None:
-    from smart_contracts.artifacts.fractmarket.client import (
-        FractmarketClient,
+    from smart_contracts.artifacts.fracticmarket.client import (
+        FracticmarketClient,
     )
 
-    app_client = FractmarketClient(
+    app_client = FracticmarketClient(
         algod_client,
         creator=deployer,
         indexer_client=indexer_client,
@@ -37,9 +37,3 @@ def deploy(
         allow_update=not is_mainnet,
     )
 
-    name = "world"
-    response = app_client.hello(name=name)
-    logger.info(
-        f"Called hello on {app_spec.contract.name} ({app_client.app_id}) "
-        f"with name={name}, received: {response.return_value}"
-    )
