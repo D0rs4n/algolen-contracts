@@ -12,7 +12,7 @@ from algokit_utils import (
 from algosdk.v2client.algod import AlgodClient
 from algosdk import transaction
 from algosdk.atomic_transaction_composer import TransactionWithSigner
-
+from algosdk.encoding import encode_as_bytes
 from smart_contracts.fractdistribution import contract as fractdistribution_contract
 
 
@@ -102,7 +102,12 @@ def test_opt_in_nft_valid_nft(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
-            "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+            "boxes": [
+                (
+                    fractdistribution_client.app_id,
+                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
+                ),
+            ],
             "foreign_assets": [create_valid_nft],
         },
     ).return_value
@@ -129,7 +134,12 @@ def test_opt_in_nft_with_invalid_params(
             "opt_in_to_asset",
             deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
             transaction_parameters={
-                "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+                "boxes": [
+                    (
+                        fractdistribution_client.app_id,
+                        (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
+                    ),
+                ],
                 "foreign_assets": [create_valid_nft],
             },
         )
@@ -156,7 +166,16 @@ def test_init_fractic_nft_flow(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
-            "boxes": [(fractdistribution_client.app_id, create_valid_nft)],
+            "boxes": [
+                (
+                    fractdistribution_client.app_id,
+                    (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
+                ),
+                (
+                    fractdistribution_client.app_id,
+                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
+                ),
+            ],
             "foreign_assets": [create_valid_nft],
         },
     )
@@ -168,7 +187,6 @@ def test_init_fractic_nft_flow(
         amt=1,
         index=create_valid_nft,
     )
-
     assert fractdistribution_client.call(
         "init_fractic_nft_flow",
         assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
@@ -178,8 +196,12 @@ def test_init_fractic_nft_flow(
             "boxes": [
                 (
                     fractdistribution_client.app_id,
-                    "d_".encode() + create_valid_nft.to_bytes(8, "big"),
-                )
+                    (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
+                ),
+                (
+                    fractdistribution_client.app_id,
+                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
+                ),
             ],
             "foreign_assets": [create_valid_nft],
         },
