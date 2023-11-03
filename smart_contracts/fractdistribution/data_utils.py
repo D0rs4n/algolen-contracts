@@ -10,5 +10,5 @@ class FracticNFTPool(pt.abi.NamedTuple):
 
 
 class MappingState:
-    deposits = BoxMapping(pt.abi.Uint64, pt.abi.Address)
-    pools = BoxMapping(pt.abi.Uint64, FracticNFTPool)
+    pools = BoxMapping(pt.abi.String, FracticNFTPool, prefix=pt.Bytes("p"))
+    deposits = BoxMapping(pt.abi.Uint64, pt.abi.Address, prefix=pt.Bytes("d"))
