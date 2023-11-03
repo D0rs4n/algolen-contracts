@@ -35,10 +35,27 @@
             "desc": "An deposit contract method\nThat will check whether the deposit is valid, and store the deposit in the contract's state"
         },
         {
-            "name": "add_proposal",
+            "name": "vote",
             "args": [
                 {
-                    "type": "(string,string,uint64,uint64)",
+                    "type": "uint64",
+                    "name": "proposal_id"
+                },
+                {
+                    "type": "uint64",
+                    "name": "vote"
+                }
+            ],
+            "returns": {
+                "type": "(string,string,uint64,uint64,uint64,uint64,uint64)"
+            },
+            "desc": "An vote contract method\nThat will check whether the vote is valid, and store the vote in the contract's state"
+        },
+        {
+            "name": "add_output",
+            "args": [
+                {
+                    "type": "(string,string,uint64,uint64,uint64,uint64,uint64)",
                     "name": "proposal"
                 }
             ],

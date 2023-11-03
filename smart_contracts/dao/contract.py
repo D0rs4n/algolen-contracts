@@ -86,6 +86,51 @@ def deposit(txn: pt.abi.AssetTransferTransaction, *, output: pt.abi.Bool) -> pt.
 
 
 @app.external
+def vote(
+    proposal_id: pt.abi.Uint64, vote: pt.abi.Uint64, *, output: Proposal
+) -> pt.Expr:
+    """
+    An vote contract method
+
+    That will check whether the vote is valid,
+    and store the vote in the contract's state
+    """
+    name = pt.abi.String()
+    url = pt.abi.String()
+    voting_start = pt.abi.Uint64()
+    voting_end = pt.abi.Uint64()
+    yes = pt.abi.Uint64()
+    no = pt.abi.Uint64()
+    abstain = pt.abi.Uint64()
+    amount = pt.abi.Uint64()
+
+    return pt.Seq(
+        (app.state.proposals[proposal_id].store_into(output)),
+        (output.name.store_into(name)),
+        (output.url.store_into(url)),
+        (output.voting_start.store_into(voting_start)),
+        (output.voting_end.store_into(voting_end)),
+        (output.yes.store_into(yes)),
+        (output.no.store_into(no)),
+        (output.abstain.store_into(abstain)),
+        pt.Assert(voting_start.get() > pt.Global.latest_timestamp()),
+        pt.Assert(voting_end.get() < pt.Global.latest_timestamp()),
+        (app.state.deposits[(pt.Txn.sender())]).store_into(amount),
+        (modified_output := Proposal()).set(
+            name,
+            url,
+            voting_start,
+            voting_end,
+            yes,
+            no,
+            abstain,
+        ),
+        app.state.proposals[proposal_id].set(modified_output),
+        app.state.proposals[proposal_id].store_into(output),
+    )
+
+
+@app.external
 def add_proposal(proposal: Proposal) -> pt.Expr:
     curr_id = app.state.curr_id.get()
     new_id = curr_id + pt.Int(1)

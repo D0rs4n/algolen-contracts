@@ -1,43 +1,35 @@
 #pragma version 8
-intcblock 0 1 4
-bytecblock 0x637572725f6964 0x676f76 0x 0x151f7c75 0x00
+intcblock 0 1 4 2
+bytecblock 0x 0x637572725f6964 0x676f76 0x151f7c75 0x00
 txn NumAppArgs
 intc_0 // 0
 ==
-bnz main_l12
+bnz main_l14
 txna ApplicationArgs 0
 pushbytes 0xb27e47a5 // "set_gov(uint64)void"
 ==
-bnz main_l11
+bnz main_l13
 txna ApplicationArgs 0
 pushbytes 0x80599519 // "gov_opt_in()bool"
 ==
-bnz main_l10
+bnz main_l12
 txna ApplicationArgs 0
 pushbytes 0xfe1cad79 // "deposit(axfer)bool"
 ==
-bnz main_l9
+bnz main_l11
 txna ApplicationArgs 0
-pushbytes 0x6b97814a // "add_proposal((string,string,uint64,uint64))void"
+pushbytes 0x4dab3b77 // "vote(uint64,uint64)(string,string,uint64,uint64,uint64,uint64,uint64)"
 ==
-bnz main_l8
+bnz main_l10
+txna ApplicationArgs 0
+pushbytes 0xcb561d0b // "add_output((string,string,uint64,uint64,uint64,uint64,uint64))void"
+==
+bnz main_l9
 txna ApplicationArgs 0
 pushbytes 0x02bece11 // "hello(string)string"
 ==
-bnz main_l7
+bnz main_l8
 err
-main_l7:
-txn OnCompletion
-intc_0 // NoOp
-==
-txn ApplicationID
-intc_0 // 0
-!=
-&&
-assert
-callsub hellocaster_12
-intc_1 // 1
-return
 main_l8:
 txn OnCompletion
 intc_0 // NoOp
@@ -47,7 +39,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub addproposalcaster_11
+callsub hellocaster_14
 intc_1 // 1
 return
 main_l9:
@@ -59,7 +51,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub depositcaster_10
+callsub addoutputcaster_13
 intc_1 // 1
 return
 main_l10:
@@ -71,7 +63,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub govoptincaster_9
+callsub votecaster_12
 intc_1 // 1
 return
 main_l11:
@@ -83,24 +75,48 @@ intc_0 // 0
 !=
 &&
 assert
-callsub setgovcaster_8
+callsub depositcaster_11
 intc_1 // 1
 return
 main_l12:
 txn OnCompletion
 intc_0 // NoOp
 ==
-bnz main_l18
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub govoptincaster_10
+intc_1 // 1
+return
+main_l13:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub setgovcaster_9
+intc_1 // 1
+return
+main_l14:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l20
 txn OnCompletion
 intc_2 // UpdateApplication
 ==
-bnz main_l17
+bnz main_l19
 txn OnCompletion
 pushint 5 // DeleteApplication
 ==
-bnz main_l16
+bnz main_l18
 err
-main_l16:
+main_l18:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -108,7 +124,7 @@ assert
 callsub delete_1
 intc_1 // 1
 return
-main_l17:
+main_l19:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -116,7 +132,7 @@ assert
 callsub update_0
 intc_1 // 1
 return
-main_l18:
+main_l20:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -154,10 +170,10 @@ retsub
 // create
 create_2:
 proto 0 0
-bytec_0 // "curr_id"
+bytec_1 // "curr_id"
 intc_0 // 0
 app_global_put
-bytec_1 // "gov"
+bytec_2 // "gov"
 intc_0 // 0
 app_global_put
 pushbytes 0x6d61785f6475726174696f6e // "max_duration"
@@ -174,7 +190,7 @@ retsub
 // set_gov
 setgov_3:
 proto 1 0
-bytec_1 // "gov"
+bytec_2 // "gov"
 frame_dig -1
 app_global_put
 retsub
@@ -184,13 +200,13 @@ govoptin_4:
 proto 0 1
 intc_0 // 0
 global GroupSize
-pushint 2 // 2
+intc_3 // 2
 ==
 assert
 itxn_begin
 intc_2 // axfer
 itxn_field TypeEnum
-bytec_1 // "gov"
+bytec_2 // "gov"
 app_global_get
 itxn_field XferAsset
 global CurrentApplicationAddress
@@ -208,7 +224,7 @@ proto 1 1
 intc_0 // 0
 frame_dig -1
 gtxns XferAsset
-bytec_1 // "gov"
+bytec_2 // "gov"
 app_global_get
 ==
 assert
@@ -237,19 +253,161 @@ intc_1 // 1
 frame_bury 0
 retsub
 
-// add_proposal
-addproposal_6:
+// vote
+vote_6:
+proto 2 1
+bytec_0 // ""
+dupn 2
+intc_0 // 0
+dupn 5
+bytec_0 // ""
+intc_0 // 0
+dup
+bytec_0 // ""
+dup
+frame_dig -2
+itob
+box_get
+store 1
+store 0
+load 1
+assert
+load 0
+frame_bury 0
+frame_dig 0
+frame_dig 0
+intc_0 // 0
+extract_uint16
+frame_dig 0
+intc_3 // 2
+extract_uint16
+substring3
+frame_bury 1
+frame_dig 0
+frame_dig 0
+intc_3 // 2
+extract_uint16
+dig 1
+len
+substring3
+frame_bury 2
+frame_dig 0
+intc_2 // 4
+extract_uint64
+frame_bury 3
+frame_dig 0
+pushint 12 // 12
+extract_uint64
+frame_bury 4
+frame_dig 0
+pushint 20 // 20
+extract_uint64
+frame_bury 5
+frame_dig 0
+pushint 28 // 28
+extract_uint64
+frame_bury 6
+frame_dig 0
+pushint 36 // 36
+extract_uint64
+frame_bury 7
+frame_dig 3
+global LatestTimestamp
+>
+assert
+frame_dig 4
+global LatestTimestamp
+<
+assert
+txn Sender
+box_get
+store 3
+store 2
+load 3
+assert
+load 2
+btoi
+frame_bury 8
+frame_dig 1
+frame_bury 13
+frame_dig 13
+frame_bury 12
+pushint 44 // 44
+frame_bury 10
+frame_dig 10
+frame_dig 13
+len
++
+frame_bury 11
+frame_dig 11
+pushint 65536 // 65536
+<
+assert
+frame_dig 10
+itob
+extract 6 0
+frame_dig 2
+frame_bury 13
+frame_dig 12
+frame_dig 13
+concat
+frame_bury 12
+frame_dig 11
+frame_bury 10
+frame_dig 10
+itob
+extract 6 0
+concat
+frame_dig 3
+itob
+concat
+frame_dig 4
+itob
+concat
+frame_dig 5
+itob
+concat
+frame_dig 6
+itob
+concat
+frame_dig 7
+itob
+concat
+frame_dig 12
+concat
+frame_bury 9
+frame_dig -2
+itob
+box_del
+pop
+frame_dig -2
+itob
+frame_dig 9
+box_put
+frame_dig -2
+itob
+box_get
+store 5
+store 4
+load 5
+assert
+load 4
+frame_bury 0
+retsub
+
+// add_output
+addoutput_7:
 proto 1 0
-bytec_0 // "curr_id"
+bytec_1 // "curr_id"
 app_global_get
 box_del
 pop
-bytec_0 // "curr_id"
+bytec_1 // "curr_id"
 app_global_get
 frame_dig -1
 box_put
-bytec_0 // "curr_id"
-bytec_0 // "curr_id"
+bytec_1 // "curr_id"
+bytec_1 // "curr_id"
 app_global_get
 intc_1 // 1
 +
@@ -257,9 +415,9 @@ app_global_put
 retsub
 
 // hello
-hello_7:
+hello_8:
 proto 1 1
-bytec_2 // ""
+bytec_0 // ""
 pushbytes 0x48656c6c6f2c20 // "Hello, "
 frame_dig -1
 extract 2 0
@@ -275,7 +433,7 @@ frame_bury 0
 retsub
 
 // set_gov_caster
-setgovcaster_8:
+setgovcaster_9:
 proto 0 0
 intc_0 // 0
 txna ApplicationArgs 1
@@ -286,7 +444,7 @@ callsub setgov_3
 retsub
 
 // gov_opt_in_caster
-govoptincaster_9:
+govoptincaster_10:
 proto 0 0
 intc_0 // 0
 callsub govoptin_4
@@ -301,7 +459,7 @@ log
 retsub
 
 // deposit_caster
-depositcaster_10:
+depositcaster_11:
 proto 0 0
 intc_0 // 0
 dup
@@ -326,25 +484,47 @@ concat
 log
 retsub
 
-// add_proposal_caster
-addproposalcaster_11:
+// vote_caster
+votecaster_12:
 proto 0 0
-bytec_2 // ""
+bytec_0 // ""
+intc_0 // 0
+dup
+txna ApplicationArgs 1
+btoi
+frame_bury 1
+txna ApplicationArgs 2
+btoi
+frame_bury 2
+frame_dig 1
+frame_dig 2
+callsub vote_6
+frame_bury 0
+bytec_3 // 0x151f7c75
+frame_dig 0
+concat
+log
+retsub
+
+// add_output_caster
+addoutputcaster_13:
+proto 0 0
+bytec_0 // ""
 txna ApplicationArgs 1
 frame_bury 0
 frame_dig 0
-callsub addproposal_6
+callsub addoutput_7
 retsub
 
 // hello_caster
-hellocaster_12:
+hellocaster_14:
 proto 0 0
-bytec_2 // ""
+bytec_0 // ""
 dup
 txna ApplicationArgs 1
 frame_bury 1
 frame_dig 1
-callsub hello_7
+callsub hello_8
 frame_bury 0
 bytec_3 // 0x151f7c75
 frame_dig 0
