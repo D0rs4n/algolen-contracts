@@ -9,10 +9,12 @@ from algokit_utils import (
     ensure_funded,
     EnsureBalanceParameters,
 )
-from algosdk.v2client.algod import AlgodClient
 from algosdk import transaction
 from algosdk.atomic_transaction_composer import TransactionWithSigner
 from algosdk.encoding import encode_as_bytes
+from algosdk.v2client.algod import AlgodClient
+from algosdk.encoding import decode_address
+from algosdk.constants import address_len
 from smart_contracts.fractdistribution import contract as fractdistribution_contract
 
 
@@ -31,7 +33,9 @@ def fractdistribution_client(
         signer=get_localnet_default_account(algod_client),
         template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
-    client.create()
+    client.create(
+        dao=decode_address(get_localnet_default_account(algod_client).address)
+    )
     ensure_funded(
         algod_client,
         EnsureBalanceParameters(
@@ -191,7 +195,7 @@ def test_init_fractic_nft_flow(
         "init_fractic_nft_flow",
         assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
         time_limit=10000,
-        max_fraction=123,
+        max_fraction=100,
         transaction_parameters={
             "boxes": [
                 (

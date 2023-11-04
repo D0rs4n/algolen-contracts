@@ -1,5 +1,6 @@
 import pyteal as pt
 from beaker.lib.storage import BoxMapping
+from beaker import GlobalStateValue
 
 
 class FracticNFTPool(pt.abi.NamedTuple):
@@ -12,3 +13,4 @@ class FracticNFTPool(pt.abi.NamedTuple):
 class MappingState:
     pools = BoxMapping(pt.abi.String, FracticNFTPool, prefix=pt.Bytes("p"))
     deposits = BoxMapping(pt.abi.Uint64, pt.abi.Address, prefix=pt.Bytes("d"))
+    dao = GlobalStateValue(pt.TealType.bytes)

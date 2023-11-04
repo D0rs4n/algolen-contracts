@@ -11,6 +11,13 @@ app = beaker.Application(
 )
 
 
+@app.create
+def create(dao: pt.abi.Address) -> pt.Expr:
+    return pt.Seq(
+        app.state.dao.set(dao.get()),
+    )
+
+
 @app.update(authorize=beaker.Authorize.only_creator(), bare=True)
 def update() -> pt.Expr:
     return pt.Assert(
@@ -43,6 +50,7 @@ def init_fractic_nft_flow(
     then locks the NFT into the contract's account, and creates a pool
     """
     return pt.Seq(
+        pt.Assert(max_fraction.get() <= pt.Int(100)),
         pt.Assert(pt.Txn.assets[0] == assert_transfer_txn.get().xfer_asset()),
         pt.Assert(app.state.deposits[pt.Itob(pt.Txn.assets[0])].exists()),
         pt.Assert(

@@ -2,6 +2,18 @@
     "name": "fracticdistribution",
     "methods": [
         {
+            "name": "create",
+            "args": [
+                {
+                    "type": "address",
+                    "name": "dao"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        },
+        {
             "name": "init_fractic_nft_flow",
             "args": [
                 {
