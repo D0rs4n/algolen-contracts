@@ -196,6 +196,7 @@ def test_init_fractic_nft_flow(
         assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
         time_limit=10000,
         max_fraction=100,
+        price_per_fraction=10000000,
         transaction_parameters={
             "boxes": [
                 (

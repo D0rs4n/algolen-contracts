@@ -39,6 +39,7 @@ def init_fractic_nft_flow(
     assert_transfer_txn: pt.abi.AssetTransferTransaction,
     time_limit: pt.abi.Uint64,
     max_fraction: pt.abi.Uint64,
+    price_per_fraction: pt.abi.Uint64,
     *,
     output: pt.abi.Bool,
 ) -> pt.Expr:
@@ -78,7 +79,9 @@ def init_fractic_nft_flow(
             }
         ),
         (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
-        (new_pool := FracticNFTPool()).set(time_limit, addr, max_fraction, asset_id),
+        (new_pool := FracticNFTPool()).set(
+            time_limit, addr, max_fraction, asset_id, price_per_fraction
+        ),
         (app.state.pools[pt.Itob(pt.Txn.assets[0])]).set(new_pool),
         (output.set(True)),
     )
@@ -125,4 +128,16 @@ def opt_in_to_asset(
         ),
         (app.state.deposits[pt.Itob(pt.Txn.assets[0])].set(pt.Txn.sender())),
         (output.set(True)),
+    )
+
+
+@app.external
+def buy_nft_fraction() -> pt.Expr:
+    return pt.Seq(
+        (
+            balance := pt.AssetHolding.balance(
+                pt.Global.current_application_address(), pt.Txn.assets[0]
+            )
+        ),
+        pt.Assert(balance.value() > pt.Int(0)),
     )
