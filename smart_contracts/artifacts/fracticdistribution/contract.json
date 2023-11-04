@@ -3,12 +3,7 @@
     "methods": [
         {
             "name": "create",
-            "args": [
-                {
-                    "type": "address",
-                    "name": "dao"
-                }
-            ],
+            "args": [],
             "returns": {
                 "type": "void"
             }

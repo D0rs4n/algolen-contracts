@@ -31,11 +31,13 @@ def fractdistribution_client(
         algod_client,
         app_spec=fractdistribution_app_spec,
         signer=get_localnet_default_account(algod_client),
-        template_values={"UPDATABLE": 1, "DELETABLE": 1},
+        template_values={
+            "UPDATABLE": 1,
+            "DELETABLE": 1,
+            "DAOADDRESS": get_localnet_default_account(algod_client).address,
+        },
     )
-    client.create(
-        dao=decode_address(get_localnet_default_account(algod_client).address)
-    )
+    client.create()
     ensure_funded(
         algod_client,
         EnsureBalanceParameters(

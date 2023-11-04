@@ -6,7 +6,7 @@ intc_0 // 0
 ==
 bnz main_l10
 txna ApplicationArgs 0
-pushbytes 0xcc694eaa // "create(address)void"
+pushbytes 0x4c5c61ba // "create()void"
 ==
 bnz main_l9
 txna ApplicationArgs 0
@@ -99,9 +99,9 @@ return
 
 // create
 create_0:
-proto 1 0
+proto 0 0
 pushbytes 0x64616f // "dao"
-frame_dig -1
+pushbytes TMPL_DAOADDRESS // TMPL_DAOADDRESS
 app_global_put
 retsub
 
@@ -356,10 +356,6 @@ retsub
 // create_caster
 createcaster_6:
 proto 0 0
-bytec_1 // ""
-txna ApplicationArgs 1
-frame_bury 0
-frame_dig 0
 callsub create_0
 retsub
 

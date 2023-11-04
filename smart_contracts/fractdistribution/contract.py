@@ -3,6 +3,8 @@ import pyteal as pt
 from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
 from .data_utils import MappingState, FracticNFTPool
 
+TMP_DAO_ADDR = "TMPL_DAOADDRESS"
+
 
 app = beaker.Application(
     "fracticdistribution",
@@ -12,9 +14,9 @@ app = beaker.Application(
 
 
 @app.create
-def create(dao: pt.abi.Address) -> pt.Expr:
+def create() -> pt.Expr:
     return pt.Seq(
-        app.state.dao.set(dao.get()),
+        app.state.dao.set(pt.Tmpl.Addr(TMP_DAO_ADDR)),
     )
 
 
