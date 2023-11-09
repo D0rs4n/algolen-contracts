@@ -1,7 +1,7 @@
 import beaker
 import pyteal as pt
 from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
-from .data_utils import MappingState, FracticNFTPool
+from .data_utils import MappingState, AlgolenListing
 
 
 app = beaker.Application(
@@ -28,10 +28,9 @@ def delete() -> pt.Expr:
 
 
 @app.external
-def init_fractic_nft_flow(
+def init_algolen_nft_flow(
     assert_transfer_txn: pt.abi.AssetTransferTransaction,
-    time_limit: pt.abi.Uint64,
-    max_fraction: pt.abi.Uint64,
+    estimated_price_in_microalgos: pt.abi.Uint64,
     *,
     output: pt.abi.Bool,
 ) -> pt.Expr:
@@ -48,30 +47,9 @@ def init_fractic_nft_flow(
         pt.Assert(
             app.state.deposits[pt.Itob(pt.Txn.assets[0])].get() == pt.Txn.sender()
         ),
-        (addr := pt.abi.make(pt.abi.Address)).set(pt.Txn.sender()),
         (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.Txn.assets[0].index),
-        (original_asset_url := pt.AssetParam.url(pt.Txn.assets[0])),
-        pt.Assert(original_asset_url.hasValue()),
-        (original_asset_hash := pt.AssetParam.metadataHash(pt.Txn.assets[0])),
-        pt.Assert(original_asset_hash.hasValue()),
-        pt.InnerTxnBuilder.Execute(
-            {
-                pt.TxnField.type_enum: pt.TxnType.AssetConfig,
-                pt.TxnField.config_asset_default_frozen: pt.Int(0),
-                pt.TxnField.config_asset_unit_name: pt.Bytes("FRC"),
-                pt.TxnField.config_asset_manager: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_reserve: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_clawback: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_total: max_fraction.get(),
-                pt.TxnField.config_asset_decimals: pt.Int(0),
-                pt.TxnField.config_asset_url: original_asset_url.value(),
-                pt.TxnField.config_asset_metadata_hash: original_asset_hash.value(),
-                pt.TxnField.note: pt.Bytes('{"standard": "arc69"}'),
-            }
-        ),
-        (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
-        (new_pool := FracticNFTPool()).set(time_limit, addr, max_fraction, asset_id),
-        (app.state.pools[pt.Itob(pt.Txn.assets[0])]).set(new_pool),
+        (new_listing := AlgolenListing()).set(asset_id, estimated_price_in_microalgos),
+        (app.state.listings[pt.Itob(pt.Txn.assets[0])]).set(new_listing),
         (output.set(True)),
     )
 
@@ -117,4 +95,21 @@ def opt_in_to_asset(
         ),
         (app.state.deposits[pt.Itob(pt.Txn.assets[0])].set(pt.Txn.sender())),
         (output.set(True)),
+    )
+
+
+@app.external
+def deposit_into_nft(
+    payment_txn: pt.abi.PaymentTransaction,
+    *,
+    output: pt.abi.Bool,
+) -> pt.Expr:
+    listing = AlgolenListing()
+    price = pt.abi.make(pt.abi.Uint64)
+    return pt.Seq(
+        pt.Assert(app.state.deposits[pt.Itob(pt.Txn.assets[0])].exists()),
+        app.state.listings[pt.Itob(pt.Txn.assets[0])].store_into(listing),
+        (listing.estimated_price_in_microalgos.store_into(price)),
+        pt.Assert(payment_txn.get().amount() == price.get()),
+        output.set(True)
     )

@@ -146,7 +146,7 @@ def test_opt_in_nft_with_invalid_params(
 
 
 @pytest.mark.parametrize("total", [1])
-def test_init_fractic_nft_flow(
+def test_init_algolen_nft_flow(
     algod_client: AlgodClient,
     algolenmain: ApplicationClient,
     create_valid_nft: int,
@@ -188,10 +188,9 @@ def test_init_fractic_nft_flow(
         index=create_valid_nft,
     )
     assert algolenmain.call(
-        "init_fractic_nft_flow",
+        "init_algolen_nft_flow",
         assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
-        time_limit=10000,
-        max_fraction=123,
+        estimated_price_in_microalgos=100000,
         transaction_parameters={
             "boxes": [
                 (

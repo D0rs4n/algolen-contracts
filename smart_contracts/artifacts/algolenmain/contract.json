@@ -2,7 +2,7 @@
     "name": "algolenmain",
     "methods": [
         {
-            "name": "init_fractic_nft_flow",
+            "name": "init_algolen_nft_flow",
             "args": [
                 {
                     "type": "axfer",
@@ -10,11 +10,7 @@
                 },
                 {
                     "type": "uint64",
-                    "name": "time_limit"
-                },
-                {
-                    "type": "uint64",
-                    "name": "max_fraction"
+                    "name": "estimated_price_in_microalgos"
                 }
             ],
             "returns": {
@@ -34,6 +30,18 @@
                 "type": "bool"
             },
             "desc": "An opt-in contract method\nThat will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied"
+        },
+        {
+            "name": "deposit_into_nft",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "payment_txn"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
         }
     ],
     "networks": {},
