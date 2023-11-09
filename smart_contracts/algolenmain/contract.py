@@ -5,8 +5,8 @@ from .data_utils import MappingState, FracticNFTPool
 
 
 app = beaker.Application(
-    "fracticdistribution",
-    descr="Fractic Distribution Main Contract",
+    "algolenmain",
+    descr="Algolen Distribution Main Contract",
     state=MappingState(),
 )
 
@@ -36,7 +36,7 @@ def init_fractic_nft_flow(
     output: pt.abi.Bool,
 ) -> pt.Expr:
     """
-    The entry contract method for Fractic
+    The entry contract method for Algolen
 
     It takes an AssetTransferTransaction as a parameter,
     checks if the contract is opted into the NFT, (implying checks were done previously)

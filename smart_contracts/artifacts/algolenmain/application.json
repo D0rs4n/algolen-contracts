@@ -36,7 +36,7 @@
         }
     },
     "contract": {
-        "name": "fracticdistribution",
+        "name": "algolenmain",
         "methods": [
             {
                 "name": "init_fractic_nft_flow",
@@ -57,7 +57,7 @@
                 "returns": {
                     "type": "bool"
                 },
-                "desc": "The entry contract method for Fractic\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
+                "desc": "The entry contract method for Algolen\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
             },
             {
                 "name": "opt_in_to_asset",
@@ -74,7 +74,7 @@
             }
         ],
         "networks": {},
-        "desc": "Fractic Distribution Main Contract"
+        "desc": "Algolen Distribution Main Contract"
     },
     "bare_call_config": {
         "delete_application": "CALL",

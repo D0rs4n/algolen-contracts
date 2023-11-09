@@ -13,16 +13,16 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk import transaction
 from algosdk.atomic_transaction_composer import TransactionWithSigner
 from algosdk.encoding import encode_as_bytes
-from smart_contracts.fractdistribution import contract as fractdistribution_contract
+from smart_contracts.algolenmain.contract import app
 
 
 @pytest.fixture(scope="session")
 def fractdistribution_app_spec(algod_client: AlgodClient) -> ApplicationSpecification:
-    return fractdistribution_contract.app.build(algod_client)
+    return app.build(algod_client)
 
 
 @pytest.fixture(scope="session")
-def fractdistribution_client(
+def algolenmain(
     algod_client: AlgodClient, fractdistribution_app_spec: ApplicationSpecification
 ) -> ApplicationClient:
     client = ApplicationClient(
@@ -84,7 +84,7 @@ def create_valid_nft(
 @pytest.mark.parametrize("total", [1])
 def test_opt_in_nft_valid_nft(
     algod_client: AlgodClient,
-    fractdistribution_client: ApplicationClient,
+    algolenmain: ApplicationClient,
     create_valid_nft: int,
 ) -> None:
     signer = get_localnet_default_account(algod_client)
@@ -94,17 +94,17 @@ def test_opt_in_nft_valid_nft(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=fractdistribution_client.app_address,
+        receiver=algolenmain.app_address,
         amt=100000,
     )
 
-    assert fractdistribution_client.call(
+    assert algolenmain.call(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
             "boxes": [
                 (
-                    fractdistribution_client.app_id,
+                    algolenmain.app_id,
                     (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
                 ),
             ],
@@ -116,7 +116,7 @@ def test_opt_in_nft_valid_nft(
 @pytest.mark.parametrize("total", [100])
 def test_opt_in_nft_with_invalid_params(
     algod_client: AlgodClient,
-    fractdistribution_client: ApplicationClient,
+    algolenmain: ApplicationClient,
     create_valid_nft: int,
 ) -> None:
     signer = get_localnet_default_account(algod_client)
@@ -126,17 +126,17 @@ def test_opt_in_nft_with_invalid_params(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=fractdistribution_client.app_address,
+        receiver=algolenmain.app_address,
         amt=100000,
     )
     with pytest.raises(LogicError):
-        fractdistribution_client.call(
+        algolenmain.call(
             "opt_in_to_asset",
             deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
             transaction_parameters={
                 "boxes": [
                     (
-                        fractdistribution_client.app_id,
+                        algolenmain.app_id,
                         (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
                     ),
                 ],
@@ -148,7 +148,7 @@ def test_opt_in_nft_with_invalid_params(
 @pytest.mark.parametrize("total", [1])
 def test_init_fractic_nft_flow(
     algod_client: AlgodClient,
-    fractdistribution_client: ApplicationClient,
+    algolenmain: ApplicationClient,
     create_valid_nft: int,
 ):
     signer = get_localnet_default_account(algod_client)
@@ -158,21 +158,21 @@ def test_init_fractic_nft_flow(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=fractdistribution_client.app_address,
+        receiver=algolenmain.app_address,
         amt=100000,
     )
 
-    fractdistribution_client.call(
+    algolenmain.call(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
             "boxes": [
                 (
-                    fractdistribution_client.app_id,
+                    algolenmain.app_id,
                     (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
                 ),
                 (
-                    fractdistribution_client.app_id,
+                    algolenmain.app_id,
                     (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
                 ),
             ],
@@ -183,11 +183,11 @@ def test_init_fractic_nft_flow(
     xfer_txn = transaction.AssetTransferTxn(
         sender=signer.address,
         sp=params,
-        receiver=fractdistribution_client.app_address,
+        receiver=algolenmain.app_address,
         amt=1,
         index=create_valid_nft,
     )
-    assert fractdistribution_client.call(
+    assert algolenmain.call(
         "init_fractic_nft_flow",
         assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
         time_limit=10000,
@@ -195,11 +195,11 @@ def test_init_fractic_nft_flow(
         transaction_parameters={
             "boxes": [
                 (
-                    fractdistribution_client.app_id,
+                    algolenmain.app_id,
                     (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
                 ),
                 (
-                    fractdistribution_client.app_id,
+                    algolenmain.app_id,
                     (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
                 ),
             ],
