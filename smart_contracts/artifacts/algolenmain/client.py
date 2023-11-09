@@ -57,7 +57,7 @@ _APP_SPEC_JSON = r"""{
         }
     },
     "contract": {
-        "name": "fracticdistribution",
+        "name": "algolenmain",
         "methods": [
             {
                 "name": "init_fractic_nft_flow",
@@ -78,7 +78,7 @@ _APP_SPEC_JSON = r"""{
                 "returns": {
                     "type": "bool"
                 },
-                "desc": "The entry contract method for Fractic\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
+                "desc": "The entry contract method for Algolen\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
             },
             {
                 "name": "opt_in_to_asset",
@@ -95,7 +95,7 @@ _APP_SPEC_JSON = r"""{
             }
         ],
         "networks": {},
-        "desc": "Fractic Distribution Main Contract"
+        "desc": "Algolen Distribution Main Contract"
     },
     "bare_call_config": {
         "delete_application": "CALL",
@@ -178,7 +178,7 @@ def _convert_deploy_args(
 
 @dataclasses.dataclass(kw_only=True)
 class InitFracticNftFlowArgs(_ArgsBase[bool]):
-    """The entry contract method for Fractic
+    """The entry contract method for Algolen
     It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"""
 
     assert_transfer_txn: TransactionWithSigner
@@ -222,7 +222,7 @@ class Composer:
         max_fraction: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """The entry contract method for Fractic
+        """The entry contract method for Algolen
         It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
         
         Adds a call to `init_fractic_nft_flow(axfer,uint64,uint64)bool` ABI method
@@ -339,10 +339,10 @@ class Composer:
         return self
 
 
-class FracticdistributionClient:
-    """Fractic Distribution Main Contract
+class AlgolenmainClient:
+    """Algolen Distribution Main Contract
     
-    A class for interacting with the fracticdistribution app providing high productivity and
+    A class for interacting with the algolenmain app providing high productivity and
     strongly typed methods to deploy and call the app"""
 
     @typing.overload
@@ -390,7 +390,7 @@ class FracticdistributionClient:
         app_name: str | None = None,
     ) -> None:
         """
-        FracticdistributionClient can be created with an app_id to interact with an existing application, alternatively
+        AlgolenmainClient can be created with an app_id to interact with an existing application, alternatively
         it can be created with a creator and indexer_client specified to find existing applications by name and creator.
         
         :param AlgodClient algod_client: AlgoSDK algod client
@@ -475,7 +475,7 @@ class FracticdistributionClient:
         max_fraction: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[bool]:
-        """The entry contract method for Fractic
+        """The entry contract method for Algolen
         It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
         
         Calls `init_fractic_nft_flow(axfer,uint64,uint64)bool` ABI method

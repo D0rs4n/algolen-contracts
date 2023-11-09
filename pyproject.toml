@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fractic-contracts"
+name = "algolen-contracts"
 version = "0.1.0"
 description = "Algorand smart contracts"
 authors = ["D0rs4n <thedorsan@protonmail.com>"]
