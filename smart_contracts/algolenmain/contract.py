@@ -1,8 +1,11 @@
 import beaker
 import pyteal as pt
 from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
-from .data_utils import MappingState, FracticNFTPool
+from .data_utils import MappingState, AlgolenListing, AlgolenRent
 
+
+MONTH_IN_SECONDS = 2_630_000
+DEPOSIT_AMMOUNT = 100_000
 
 app = beaker.Application(
     "algolenmain",
@@ -28,10 +31,9 @@ def delete() -> pt.Expr:
 
 
 @app.external
-def init_fractic_nft_flow(
+def init_algolen_nft_flow(
     assert_transfer_txn: pt.abi.AssetTransferTransaction,
-    time_limit: pt.abi.Uint64,
-    max_fraction: pt.abi.Uint64,
+    estimated_price_in_microalgos: pt.abi.Uint64,
     *,
     output: pt.abi.Bool,
 ) -> pt.Expr:
@@ -42,36 +44,23 @@ def init_fractic_nft_flow(
     checks if the contract is opted into the NFT, (implying checks were done previously)
     then locks the NFT into the contract's account, and creates a pool
     """
+
+    asset_owner = pt.abi.make(pt.abi.Address)
+    asset_id = pt.abi.make(pt.abi.Uint64)
+    available_for_rent = pt.abi.make(pt.abi.Bool)
     return pt.Seq(
         pt.Assert(pt.Txn.assets[0] == assert_transfer_txn.get().xfer_asset()),
         pt.Assert(app.state.deposits[pt.Itob(pt.Txn.assets[0])].exists()),
         pt.Assert(
             app.state.deposits[pt.Itob(pt.Txn.assets[0])].get() == pt.Txn.sender()
         ),
-        (addr := pt.abi.make(pt.abi.Address)).set(pt.Txn.sender()),
-        (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.Txn.assets[0].index),
-        (original_asset_url := pt.AssetParam.url(pt.Txn.assets[0])),
-        pt.Assert(original_asset_url.hasValue()),
-        (original_asset_hash := pt.AssetParam.metadataHash(pt.Txn.assets[0])),
-        pt.Assert(original_asset_hash.hasValue()),
-        pt.InnerTxnBuilder.Execute(
-            {
-                pt.TxnField.type_enum: pt.TxnType.AssetConfig,
-                pt.TxnField.config_asset_default_frozen: pt.Int(0),
-                pt.TxnField.config_asset_unit_name: pt.Bytes("FRC"),
-                pt.TxnField.config_asset_manager: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_reserve: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_clawback: pt.Global.current_application_address(),
-                pt.TxnField.config_asset_total: max_fraction.get(),
-                pt.TxnField.config_asset_decimals: pt.Int(0),
-                pt.TxnField.config_asset_url: original_asset_url.value(),
-                pt.TxnField.config_asset_metadata_hash: original_asset_hash.value(),
-                pt.TxnField.note: pt.Bytes('{"standard": "arc69"}'),
-            }
+        asset_id.set(pt.Txn.assets[0].index),
+        asset_owner.set(pt.Txn.sender()),
+        (available_for_rent.set(True)),
+        (new_listing := AlgolenListing()).set(
+            asset_id, estimated_price_in_microalgos, asset_owner, available_for_rent
         ),
-        (asset_id := pt.abi.make(pt.abi.Uint64)).set(pt.InnerTxn.created_asset_id()),
-        (new_pool := FracticNFTPool()).set(time_limit, addr, max_fraction, asset_id),
-        (app.state.pools[pt.Itob(pt.Txn.assets[0])]).set(new_pool),
+        (app.state.listings[pt.Itob(pt.Txn.assets[0])]).set(new_listing),
         (output.set(True)),
     )
 
@@ -105,7 +94,7 @@ def opt_in_to_asset(
             == pt.Global.current_application_address()
         ),
         # the Deposit is 5 Algos = 5000000 microAlgos
-        pt.Assert(deposit_payment_txn.get().amount() == pt.Int(100000)),
+        pt.Assert(deposit_payment_txn.get().amount() == pt.Int(DEPOSIT_AMMOUNT)),
         # Record the deposit
         pt.InnerTxnBuilder.Execute(
             {
@@ -117,4 +106,48 @@ def opt_in_to_asset(
         ),
         (app.state.deposits[pt.Itob(pt.Txn.assets[0])].set(pt.Txn.sender())),
         (output.set(True)),
+    )
+
+
+@app.external
+def deposit_into_nft(
+    payment_txn: pt.abi.PaymentTransaction,
+    *,
+    output: pt.abi.Bool,
+) -> pt.Expr:
+    listing = AlgolenListing()
+    current_blocktime = pt.abi.make(pt.abi.Uint64)
+    price = pt.abi.make(pt.abi.Uint64)
+    asset_owner = pt.abi.make(pt.abi.Address)
+    asset_renter = pt.abi.make(pt.abi.Address)
+    next_rent_due_timestamp = pt.abi.make(pt.abi.Uint64)
+    return pt.Seq(
+        pt.Assert(app.state.deposits[pt.Itob(pt.Txn.assets[0])].exists()),
+        app.state.listings[pt.Itob(pt.Txn.assets[0])].store_into(listing),
+        (listing.estimated_price_in_microalgos.store_into(price)),
+        (listing.owner.store_into(asset_owner)),
+        (asset_renter.set(pt.Txn.sender())),
+        pt.Assert(payment_txn.get().amount() == price.get()),
+        (current_blocktime.set(pt.Txn.first_valid_time())),
+        (
+            next_rent_due_timestamp.set(
+                pt.Int(MONTH_IN_SECONDS) + pt.Txn.first_valid_time()
+            )
+        ),
+        (new_rent := AlgolenRent()).set(
+            next_rent_due_timestamp,
+            asset_owner,
+            asset_renter,
+        ),
+        (app.state.rents[pt.Itob(pt.Txn.assets[0])]).set(new_rent),
+        pt.InnerTxnBuilder.Execute(
+            {
+                pt.TxnField.type_enum: pt.TxnType.AssetTransfer,
+                pt.TxnField.asset_amount: pt.Int(1),
+                pt.TxnField.asset_receiver: asset_renter,
+                pt.TxnField.xfer_asset: pt.Txn.assets[0],
+                pt.TxnField.note: pt.Bytes("Algolen NFT Lending Protocol"),
+            }
+        ),
+        output.set(True),
     )
