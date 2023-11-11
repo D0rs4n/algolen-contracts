@@ -13,21 +13,22 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk import transaction
 from algosdk.atomic_transaction_composer import TransactionWithSigner
 from algosdk.encoding import encode_as_bytes
-from smart_contracts.algolenmain.contract import app
+from smart_contracts.algolen.contract import app
+import algosdk
 
 
 @pytest.fixture(scope="session")
-def fractdistribution_app_spec(algod_client: AlgodClient) -> ApplicationSpecification:
+def algolen_app_spec(algod_client: AlgodClient) -> ApplicationSpecification:
     return app.build(algod_client)
 
 
 @pytest.fixture(scope="session")
-def algolenmain(
-    algod_client: AlgodClient, fractdistribution_app_spec: ApplicationSpecification
+def algolen(
+    algod_client: AlgodClient, algolen_app_spec: ApplicationSpecification
 ) -> ApplicationClient:
     client = ApplicationClient(
         algod_client,
-        app_spec=fractdistribution_app_spec,
+        app_spec=algolen_app_spec,
         signer=get_localnet_default_account(algod_client),
         template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
@@ -36,8 +37,8 @@ def algolenmain(
         algod_client,
         EnsureBalanceParameters(
             account_to_fund=client.app_address,
-            min_spending_balance_micro_algos=10000000000,
-            min_funding_increment_micro_algos=1000000000,
+            min_spending_balance_micro_algos=1_000_000,
+            min_funding_increment_micro_algos=1_000_000,
         ),
     )
     return client
@@ -46,7 +47,7 @@ def algolenmain(
 @pytest.fixture(scope="function")
 def create_valid_nft(
     algod_client: AlgodClient,
-    fractdistribution_app_spec: ApplicationSpecification,
+    algolen_app_spec: ApplicationSpecification,
     total: int,
 ) -> int:
     # Get the default signer for localnet
@@ -84,7 +85,7 @@ def create_valid_nft(
 @pytest.mark.parametrize("total", [1])
 def test_opt_in_nft_valid_nft(
     algod_client: AlgodClient,
-    algolenmain: ApplicationClient,
+    algolen: ApplicationClient,
     create_valid_nft: int,
 ) -> None:
     signer = get_localnet_default_account(algod_client)
@@ -94,20 +95,14 @@ def test_opt_in_nft_valid_nft(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=algolenmain.app_address,
-        amt=100000,
+        receiver=algolen.app_address,
+        amt=1_000_000,
     )
 
-    assert algolenmain.call(
+    assert algolen.call(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
-            "boxes": [
-                (
-                    algolenmain.app_id,
-                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
-                ),
-            ],
             "foreign_assets": [create_valid_nft],
         },
     ).return_value
@@ -116,7 +111,7 @@ def test_opt_in_nft_valid_nft(
 @pytest.mark.parametrize("total", [100])
 def test_opt_in_nft_with_invalid_params(
     algod_client: AlgodClient,
-    algolenmain: ApplicationClient,
+    algolen: ApplicationClient,
     create_valid_nft: int,
 ) -> None:
     signer = get_localnet_default_account(algod_client)
@@ -126,29 +121,23 @@ def test_opt_in_nft_with_invalid_params(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=algolenmain.app_address,
+        receiver=algolen.app_address,
         amt=100000,
     )
     with pytest.raises(LogicError):
-        algolenmain.call(
+        algolen.call(
             "opt_in_to_asset",
             deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
             transaction_parameters={
-                "boxes": [
-                    (
-                        algolenmain.app_id,
-                        (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
-                    ),
-                ],
                 "foreign_assets": [create_valid_nft],
             },
         )
 
 
 @pytest.mark.parametrize("total", [1])
-def test_init_algolen_nft_flow(
+def test_list_delist_nft(
     algod_client: AlgodClient,
-    algolenmain: ApplicationClient,
+    algolen: ApplicationClient,
     create_valid_nft: int,
 ):
     signer = get_localnet_default_account(algod_client)
@@ -158,50 +147,163 @@ def test_init_algolen_nft_flow(
     unsigned_pmtxn = transaction.PaymentTxn(
         sender=signer.address,
         sp=params,
-        receiver=algolenmain.app_address,
-        amt=100000,
+        receiver=algolen.app_address,
+        amt=1_000_000,
     )
 
-    algolenmain.call(
+    algolen.call(
         "opt_in_to_asset",
         deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
         transaction_parameters={
-            "boxes": [
-                (
-                    algolenmain.app_id,
-                    (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
-                ),
-                (
-                    algolenmain.app_id,
-                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
-                ),
-            ],
             "foreign_assets": [create_valid_nft],
         },
     )
 
+    balance_before = algod_client.account_info(algolen.app_address)["amount"]
+
     xfer_txn = transaction.AssetTransferTxn(
         sender=signer.address,
         sp=params,
-        receiver=algolenmain.app_address,
+        receiver=algolen.app_address,
         amt=1,
         index=create_valid_nft,
     )
-    assert algolenmain.call(
-        "init_algolen_nft_flow",
-        assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
-        estimated_price_in_microalgos=100000,
+    assert algolen.call(
+        "list_nft",
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        deposit=10_000_000,
+        price_per_day=1_000_000,
+        max_duration_in_days=2,
         transaction_parameters={
             "boxes": [
                 (
-                    algolenmain.app_id,
-                    (encode_as_bytes("p") + encode_as_bytes(create_valid_nft)),
-                ),
-                (
-                    algolenmain.app_id,
-                    (encode_as_bytes("d") + encode_as_bytes(create_valid_nft)),
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
                 ),
             ],
             "foreign_assets": [create_valid_nft],
         },
     ).return_value
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1_000,
+    )
+
+    assert algolen.call(
+        "delist_nft",
+        fee_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    balance_after = algod_client.account_info(algolen.app_address)["amount"]
+
+    assert balance_before == balance_after
+
+
+@pytest.mark.parametrize("total", [1])
+def test_rent_return(
+    algod_client: AlgodClient,
+    algolen: ApplicationClient,
+    create_valid_nft: int,
+):
+    signer = get_localnet_default_account(algod_client)
+
+    params = algod_client.suggested_params()
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1_000_000,
+    )
+
+    algolen.call(
+        "opt_in_to_asset",
+        deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        transaction_parameters={
+            "foreign_assets": [create_valid_nft],
+        },
+    )
+
+    balance_before = algod_client.account_info(algolen.app_address)["amount"]
+
+    xfer_txn = transaction.AssetTransferTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1,
+        index=create_valid_nft,
+    )
+    assert algolen.call(
+        "list_nft",
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        deposit=1_000_000,
+        price_per_day=100_000_000,
+        max_duration_in_days=5,
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=4_000 + 1_000_000 + (100_000_000 * 2),
+    )
+
+    assert algolen.call(
+        "rent_nft",
+        payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        duration_in_days=2,
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    xfer_txn = transaction.AssetTransferTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1,
+        index=create_valid_nft,
+    )
+    assert algolen.call(
+        "return_nft",
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    balance_after = algod_client.account_info(algolen.app_address)["amount"]
+    assert balance_before == balance_after

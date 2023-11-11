@@ -21,7 +21,12 @@ from algosdk.atomic_transaction_composer import (
 
 _APP_SPEC_JSON = r"""{
     "hints": {
-        "init_algolen_nft_flow(axfer,uint64)bool": {
+        "list_nft(axfer,uint64,uint64,uint64)bool": {
+            "call_config": {
+                "no_op": "CALL"
+            }
+        },
+        "delist_nft(pay)bool": {
             "call_config": {
                 "no_op": "CALL"
             }
@@ -31,14 +36,24 @@ _APP_SPEC_JSON = r"""{
                 "no_op": "CALL"
             }
         },
-        "deposit_into_nft(pay)bool": {
+        "rent_nft(pay,uint64)bool": {
+            "call_config": {
+                "no_op": "CALL"
+            }
+        },
+        "return_nft(axfer)bool": {
+            "call_config": {
+                "no_op": "CALL"
+            }
+        },
+        "claim_deposit()bool": {
             "call_config": {
                 "no_op": "CALL"
             }
         }
     },
     "source": {
-        "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0IDMyCmJ5dGVjYmxvY2sgMHggMHg2NCAweDAwIDB4NzAgMHgxNTFmN2M3NSAweDcyCnR4biBOdW1BcHBBcmdzCmludGNfMCAvLyAwCj09CmJueiBtYWluX2w4CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4OTE2OWM2NmEgLy8gImluaXRfYWxnb2xlbl9uZnRfZmxvdyhheGZlcix1aW50NjQpYm9vbCIKPT0KYm56IG1haW5fbDcKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgyZWRlZjExMiAvLyAib3B0X2luX3RvX2Fzc2V0KHBheSlib29sIgo9PQpibnogbWFpbl9sNgp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweDJmNGYwMjFkIC8vICJkZXBvc2l0X2ludG9fbmZ0KHBheSlib29sIgo9PQpibnogbWFpbl9sNQplcnIKbWFpbl9sNToKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBkZXBvc2l0aW50b25mdGNhc3Rlcl83CmludGNfMSAvLyAxCnJldHVybgptYWluX2w2Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIG9wdGludG9hc3NldGNhc3Rlcl82CmludGNfMSAvLyAxCnJldHVybgptYWluX2w3Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGluaXRhbGdvbGVubmZ0Zmxvd2Nhc3Rlcl81CmludGNfMSAvLyAxCnJldHVybgptYWluX2w4Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wxNAp0eG4gT25Db21wbGV0aW9uCmludGNfMiAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sMTMKdHhuIE9uQ29tcGxldGlvbgpwdXNoaW50IDUgLy8gRGVsZXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDEyCmVycgptYWluX2wxMjoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzEKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEzOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiB1cGRhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sMTQ6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCj09CmFzc2VydAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIHVwZGF0ZQp1cGRhdGVfMDoKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX1VQREFUQUJMRSAvLyBUTVBMX1VQREFUQUJMRQovLyBDaGVjayBhcHAgaXMgdXBkYXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGRlbGV0ZQpkZWxldGVfMToKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX0RFTEVUQUJMRSAvLyBUTVBMX0RFTEVUQUJMRQovLyBDaGVjayBhcHAgaXMgZGVsZXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGluaXRfYWxnb2xlbl9uZnRfZmxvdwppbml0YWxnb2xlbm5mdGZsb3dfMjoKcHJvdG8gMiAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4bmEgQXNzZXRzIDAKZnJhbWVfZGlnIC0yCmd0eG5zIFhmZXJBc3NldAo9PQphc3NlcnQKYnl0ZWNfMSAvLyAiZCIKdHhuYSBBc3NldHMgMAppdG9iCmNvbmNhdApib3hfbGVuCnN0b3JlIDEKc3RvcmUgMApsb2FkIDEKYXNzZXJ0CmJ5dGVjXzEgLy8gImQiCnR4bmEgQXNzZXRzIDAKaXRvYgpjb25jYXQKYm94X2dldApzdG9yZSAzCnN0b3JlIDIKbG9hZCAzCmFzc2VydApsb2FkIDIKdHhuIFNlbmRlcgo9PQphc3NlcnQKaW50Y18wIC8vIDAKZnJhbWVfYnVyeSAyCnR4biBTZW5kZXIKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmxlbgppbnRjXzMgLy8gMzIKPT0KYXNzZXJ0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMwpmcmFtZV9kaWcgMgppdG9iCmZyYW1lX2RpZyAtMQppdG9iCmNvbmNhdApmcmFtZV9kaWcgMQpjb25jYXQKYnl0ZWNfMiAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAzCnNldGJpdApjb25jYXQKZnJhbWVfYnVyeSA0CmJ5dGVjXzMgLy8gInAiCnR4bmEgQXNzZXRzIDAKaXRvYgpjb25jYXQKYm94X2RlbApwb3AKYnl0ZWNfMyAvLyAicCIKdHhuYSBBc3NldHMgMAppdG9iCmNvbmNhdApmcmFtZV9kaWcgNApib3hfcHV0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIG9wdF9pbl90b19hc3NldApvcHRpbnRvYXNzZXRfMzoKcHJvdG8gMSAxCmludGNfMCAvLyAwCmJ5dGVjXzEgLy8gImQiCnR4bmEgQXNzZXRzIDAKaXRvYgpjb25jYXQKYm94X2xlbgpzdG9yZSA1CnN0b3JlIDQKbG9hZCA1CiEKYXNzZXJ0CnR4biBOdW1Bc3NldHMKaW50Y18wIC8vIDAKPT0KIQphc3NlcnQKdHhuYSBBc3NldHMgMAphc3NldF9wYXJhbXNfZ2V0IEFzc2V0RGVjaW1hbHMKc3RvcmUgNwpzdG9yZSA2CmxvYWQgNwphc3NlcnQKbG9hZCA2CmludGNfMCAvLyAwCj09CmFzc2VydAp0eG5hIEFzc2V0cyAwCmFzc2V0X3BhcmFtc19nZXQgQXNzZXRUb3RhbApzdG9yZSA5CnN0b3JlIDgKbG9hZCA5CmFzc2VydApsb2FkIDgKaW50Y18xIC8vIDEKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKYXNzZXRfcGFyYW1zX2dldCBBc3NldENyZWF0b3IKc3RvcmUgMTEKc3RvcmUgMTAKbG9hZCAxMQphc3NlcnQKbG9hZCAxMAp0eG4gU2VuZGVyCj09CmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgU2VuZGVyCnR4biBTZW5kZXIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBSZWNlaXZlcgpnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwo9PQphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIEFtb3VudApwdXNoaW50IDEwMDAwMCAvLyAxMDAwMDAKPT0KYXNzZXJ0Cml0eG5fYmVnaW4KaW50Y18yIC8vIGF4ZmVyCml0eG5fZmllbGQgVHlwZUVudW0KaW50Y18wIC8vIDAKaXR4bl9maWVsZCBBc3NldEFtb3VudApnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwppdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKdHhuYSBBc3NldHMgMAppdHhuX2ZpZWxkIFhmZXJBc3NldAppdHhuX3N1Ym1pdApieXRlY18xIC8vICJkIgp0eG5hIEFzc2V0cyAwCml0b2IKY29uY2F0CmJveF9kZWwKcG9wCmJ5dGVjXzEgLy8gImQiCnR4bmEgQXNzZXRzIDAKaXRvYgpjb25jYXQKdHhuIFNlbmRlcgpib3hfcHV0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGRlcG9zaXRfaW50b19uZnQKZGVwb3NpdGludG9uZnRfNDoKcHJvdG8gMSAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCmJ5dGVjXzEgLy8gImQiCnR4bmEgQXNzZXRzIDAKaXRvYgpjb25jYXQKYm94X2xlbgpzdG9yZSAxMwpzdG9yZSAxMgpsb2FkIDEzCmFzc2VydApieXRlY18zIC8vICJwIgp0eG5hIEFzc2V0cyAwCml0b2IKY29uY2F0CmJveF9nZXQKc3RvcmUgMTUKc3RvcmUgMTQKbG9hZCAxNQphc3NlcnQKbG9hZCAxNApmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKcHVzaGludCA4IC8vIDgKZXh0cmFjdF91aW50NjQKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAxCmV4dHJhY3QgMTYgMzIKZnJhbWVfYnVyeSA0CnR4biBTZW5kZXIKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmxlbgppbnRjXzMgLy8gMzIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKZnJhbWVfZGlnIDMKPT0KYXNzZXJ0CnR4biBGaXJzdFZhbGlkVGltZQpmcmFtZV9idXJ5IDIKcHVzaGludCAyNjMwMDAwIC8vIDI2MzAwMDAKdHhuIEZpcnN0VmFsaWRUaW1lCisKZnJhbWVfYnVyeSA2CmZyYW1lX2RpZyA2Cml0b2IKZnJhbWVfZGlnIDQKY29uY2F0CmZyYW1lX2RpZyA1CmNvbmNhdApmcmFtZV9idXJ5IDcKYnl0ZWMgNSAvLyAiciIKdHhuYSBBc3NldHMgMAppdG9iCmNvbmNhdApib3hfZGVsCnBvcApieXRlYyA1IC8vICJyIgp0eG5hIEFzc2V0cyAwCml0b2IKY29uY2F0CmZyYW1lX2RpZyA3CmJveF9wdXQKaW50Y18xIC8vIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gaW5pdF9hbGdvbGVuX25mdF9mbG93X2Nhc3Rlcgppbml0YWxnb2xlbm5mdGZsb3djYXN0ZXJfNToKcHJvdG8gMCAwCmludGNfMCAvLyAwCmR1cG4gMgp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmJ0b2kKZnJhbWVfYnVyeSAyCnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMiAvLyBheGZlcgo9PQphc3NlcnQKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIDIKY2FsbHN1YiBpbml0YWxnb2xlbm5mdGZsb3dfMgpmcmFtZV9idXJ5IDAKYnl0ZWMgNCAvLyAweDE1MWY3Yzc1CmJ5dGVjXzIgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWIKCi8vIG9wdF9pbl90b19hc3NldF9jYXN0ZXIKb3B0aW50b2Fzc2V0Y2FzdGVyXzY6CnByb3RvIDAgMAppbnRjXzAgLy8gMApkdXAKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKY2FsbHN1YiBvcHRpbnRvYXNzZXRfMwpmcmFtZV9idXJ5IDAKYnl0ZWMgNCAvLyAweDE1MWY3Yzc1CmJ5dGVjXzIgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWIKCi8vIGRlcG9zaXRfaW50b19uZnRfY2FzdGVyCmRlcG9zaXRpbnRvbmZ0Y2FzdGVyXzc6CnByb3RvIDAgMAppbnRjXzAgLy8gMApkdXAKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKY2FsbHN1YiBkZXBvc2l0aW50b25mdF80CmZyYW1lX2J1cnkgMApieXRlYyA0IC8vIDB4MTUxZjdjNzUKYnl0ZWNfMiAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1Yg==",
+        "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0IDgKYnl0ZWNibG9jayAweCAweDE1MWY3Yzc1IDB4MDAKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDE0CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4NTM0MTZkMzggLy8gImxpc3RfbmZ0KGF4ZmVyLHVpbnQ2NCx1aW50NjQsdWludDY0KWJvb2wiCj09CmJueiBtYWluX2wxMwp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweGUwZDFkYTZjIC8vICJkZWxpc3RfbmZ0KHBheSlib29sIgo9PQpibnogbWFpbl9sMTIKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgyZWRlZjExMiAvLyAib3B0X2luX3RvX2Fzc2V0KHBheSlib29sIgo9PQpibnogbWFpbl9sMTEKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHg5ODM4M2ZkMyAvLyAicmVudF9uZnQocGF5LHVpbnQ2NClib29sIgo9PQpibnogbWFpbl9sMTAKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgzMGM1NDc0ZiAvLyAicmV0dXJuX25mdChheGZlcilib29sIgo9PQpibnogbWFpbl9sOQp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweDk4ZDI1YzBlIC8vICJjbGFpbV9kZXBvc2l0KClib29sIgo9PQpibnogbWFpbl9sOAplcnIKbWFpbl9sODoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBjbGFpbWRlcG9zaXRjYXN0ZXJfMTMKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDk6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgcmV0dXJubmZ0Y2FzdGVyXzEyCmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMDoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiByZW50bmZ0Y2FzdGVyXzExCmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMToKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBvcHRpbnRvYXNzZXRjYXN0ZXJfMTAKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEyOgp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGRlbGlzdG5mdGNhc3Rlcl85CmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMzoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBsaXN0bmZ0Y2FzdGVyXzgKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDE0Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wyMAp0eG4gT25Db21wbGV0aW9uCmludGNfMiAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sMTkKdHhuIE9uQ29tcGxldGlvbgpwdXNoaW50IDUgLy8gRGVsZXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDE4CmVycgptYWluX2wxODoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzEKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDE5Ogp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiB1cGRhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sMjA6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCj09CmFzc2VydAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIHVwZGF0ZQp1cGRhdGVfMDoKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX1VQREFUQUJMRSAvLyBUTVBMX1VQREFUQUJMRQovLyBDaGVjayBhcHAgaXMgdXBkYXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGRlbGV0ZQpkZWxldGVfMToKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX0RFTEVUQUJMRSAvLyBUTVBMX0RFTEVUQUJMRQovLyBDaGVjayBhcHAgaXMgZGVsZXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGxpc3RfbmZ0Cmxpc3RuZnRfMjoKcHJvdG8gNCAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKZHVwCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG5hIEFzc2V0cyAwCmZyYW1lX2RpZyAtNApndHhucyBYZmVyQXNzZXQKPT0KYXNzZXJ0CnR4biBTZW5kZXIKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmxlbgpwdXNoaW50IDMyIC8vIDMyCj09CmFzc2VydApmcmFtZV9kaWcgLTMKaXRvYgpmcmFtZV9kaWcgLTIKaXRvYgpjb25jYXQKZnJhbWVfZGlnIC0xCml0b2IKY29uY2F0CmZyYW1lX2RpZyAxCmNvbmNhdApmcmFtZV9idXJ5IDIKdHhuYSBBc3NldHMgMAppdG9iCmJveF9kZWwKcG9wCnR4bmEgQXNzZXRzIDAKaXRvYgpmcmFtZV9kaWcgMgpib3hfcHV0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGRlbGlzdF9uZnQKZGVsaXN0bmZ0XzM6CnByb3RvIDEgMQppbnRjXzAgLy8gMApieXRlY18wIC8vICIiCmR1cApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKcHVzaGludCAxMDAwIC8vIDEwMDAKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKaXRvYgpib3hfZ2V0CnN0b3JlIDEKc3RvcmUgMApsb2FkIDEKYXNzZXJ0CmxvYWQgMApmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZXh0cmFjdCAyNCAwCmZyYW1lX2J1cnkgMgpmcmFtZV9kaWcgMgp0eG4gU2VuZGVyCj09CmFzc2VydAppdHhuX2JlZ2luCmludGNfMiAvLyBheGZlcgppdHhuX2ZpZWxkIFR5cGVFbnVtCmludGNfMSAvLyAxCml0eG5fZmllbGQgQXNzZXRBbW91bnQKdHhuIFNlbmRlcgppdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKdHhuYSBBc3NldHMgMAppdHhuX2ZpZWxkIFhmZXJBc3NldAppdHhuX3N1Ym1pdAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2RlbAphc3NlcnQKaW50Y18xIC8vIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gb3B0X2luX3RvX2Fzc2V0Cm9wdGludG9hc3NldF80Ogpwcm90byAxIDEKaW50Y18wIC8vIDAKdHhuIE51bUFzc2V0cwppbnRjXzAgLy8gMAo9PQohCmFzc2VydAp0eG5hIEFzc2V0cyAwCmFzc2V0X3BhcmFtc19nZXQgQXNzZXREZWNpbWFscwpzdG9yZSAzCnN0b3JlIDIKbG9hZCAzCmFzc2VydApsb2FkIDIKaW50Y18wIC8vIDAKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKYXNzZXRfcGFyYW1zX2dldCBBc3NldFRvdGFsCnN0b3JlIDUKc3RvcmUgNApsb2FkIDUKYXNzZXJ0CmxvYWQgNAppbnRjXzEgLy8gMQo9PQphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIFNlbmRlcgp0eG4gU2VuZGVyCj09CmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKcHVzaGludCAxMDAwMDAwIC8vIDEwMDAwMDAKPT0KYXNzZXJ0Cml0eG5fYmVnaW4KaW50Y18yIC8vIGF4ZmVyCml0eG5fZmllbGQgVHlwZUVudW0KaW50Y18wIC8vIDAKaXR4bl9maWVsZCBBc3NldEFtb3VudApnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwppdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKdHhuYSBBc3NldHMgMAppdHhuX2ZpZWxkIFhmZXJBc3NldAppdHhuX3N1Ym1pdAppbnRjXzEgLy8gMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyByZW50X25mdApyZW50bmZ0XzU6CnByb3RvIDIgMQppbnRjXzAgLy8gMApieXRlY18wIC8vICIiCmludGNfMCAvLyAwCmR1cG4gMgpieXRlY18wIC8vICIiCmR1cAppbnRjXzAgLy8gMApieXRlY18wIC8vICIiCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2dldApzdG9yZSA3CnN0b3JlIDYKbG9hZCA3CmFzc2VydApsb2FkIDYKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmludGNfMCAvLyAwCmV4dHJhY3RfdWludDY0CmZyYW1lX2J1cnkgMgpmcmFtZV9kaWcgMQppbnRjXzMgLy8gOApleHRyYWN0X3VpbnQ2NApmcmFtZV9idXJ5IDMKZnJhbWVfZGlnIDEKcHVzaGludCAxNiAvLyAxNgpleHRyYWN0X3VpbnQ2NApmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDEKZXh0cmFjdCAyNCAwCmZyYW1lX2J1cnkgNQp0eG4gU2VuZGVyCmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNgpsZW4KcHVzaGludCAzMiAvLyAzMgo9PQphc3NlcnQKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIC0xCj49CmFzc2VydApmcmFtZV9kaWcgLTIKZ3R4bnMgQW1vdW50CmZyYW1lX2RpZyAyCmZyYW1lX2RpZyAtMQpmcmFtZV9kaWcgMwoqCisKcHVzaGludCA0MDAwIC8vIDQwMDAKKwo9PQphc3NlcnQKcHVzaGludCA4NjQwMCAvLyA4NjQwMApmcmFtZV9kaWcgLTEKKgp0eG4gRmlyc3RWYWxpZFRpbWUKKwpmcmFtZV9idXJ5IDcKZnJhbWVfZGlnIDcKaXRvYgpmcmFtZV9kaWcgMgppdG9iCmNvbmNhdApmcmFtZV9kaWcgNQpjb25jYXQKZnJhbWVfZGlnIDYKY29uY2F0CmZyYW1lX2J1cnkgOAp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2RlbAphc3NlcnQKdHhuYSBBc3NldHMgMAppdG9iCmJveF9kZWwKcG9wCnR4bmEgQXNzZXRzIDAKaXRvYgpmcmFtZV9kaWcgOApib3hfcHV0Cml0eG5fYmVnaW4KaW50Y18yIC8vIGF4ZmVyCml0eG5fZmllbGQgVHlwZUVudW0KaW50Y18xIC8vIDEKaXR4bl9maWVsZCBBc3NldEFtb3VudApmcmFtZV9kaWcgNgppdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKdHhuYSBBc3NldHMgMAppdHhuX2ZpZWxkIFhmZXJBc3NldAppdHhuX3N1Ym1pdAppdHhuX2JlZ2luCmludGNfMSAvLyBwYXkKaXR4bl9maWVsZCBUeXBlRW51bQpmcmFtZV9kaWcgLTEKZnJhbWVfZGlnIDMKKgppdHhuX2ZpZWxkIEFtb3VudApmcmFtZV9kaWcgNQppdHhuX2ZpZWxkIFJlY2VpdmVyCml0eG5fc3VibWl0CmludGNfMSAvLyAxCmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIHJldHVybl9uZnQKcmV0dXJubmZ0XzY6CnByb3RvIDEgMQppbnRjXzAgLy8gMApieXRlY18wIC8vICIiCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG5hIEFzc2V0cyAwCmZyYW1lX2RpZyAtMQpndHhucyBYZmVyQXNzZXQKPT0KYXNzZXJ0CnR4bmEgQXNzZXRzIDAKaXRvYgpib3hfZ2V0CnN0b3JlIDkKc3RvcmUgOApsb2FkIDkKYXNzZXJ0CmxvYWQgOApmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKaW50Y18zIC8vIDgKZXh0cmFjdF91aW50NjQKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAxCmludGNfMCAvLyAwCmV4dHJhY3RfdWludDY0CmZyYW1lX2J1cnkgMwpmcmFtZV9kaWcgMQpleHRyYWN0IDE2IDMyCmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgMQpleHRyYWN0IDQ4IDAKZnJhbWVfYnVyeSA1CnR4biBGaXJzdFZhbGlkVGltZQpmcmFtZV9kaWcgMwo8CmFzc2VydAppdHhuX2JlZ2luCmludGNfMSAvLyBwYXkKaXR4bl9maWVsZCBUeXBlRW51bQpmcmFtZV9kaWcgMgppdHhuX2ZpZWxkIEFtb3VudAp0eG4gU2VuZGVyCml0eG5fZmllbGQgUmVjZWl2ZXIKaXR4bl9zdWJtaXQKaXR4bl9iZWdpbgppbnRjXzIgLy8gYXhmZXIKaXR4bl9maWVsZCBUeXBlRW51bQppbnRjXzEgLy8gMQppdHhuX2ZpZWxkIEFzc2V0QW1vdW50CmZyYW1lX2RpZyA0Cml0eG5fZmllbGQgQXNzZXRSZWNlaXZlcgp0eG5hIEFzc2V0cyAwCml0eG5fZmllbGQgWGZlckFzc2V0Cml0eG5fc3VibWl0CnR4bmEgQXNzZXRzIDAKaXRvYgpib3hfZGVsCmFzc2VydAppbnRjXzEgLy8gMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBjbGFpbV9kZXBvc2l0CmNsYWltZGVwb3NpdF83Ogpwcm90byAwIDEKaW50Y18wIC8vIDAKYnl0ZWNfMCAvLyAiIgppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMCAvLyAiIgp0eG5hIEFzc2V0cyAwCml0b2IKYm94X2dldApzdG9yZSAxMQpzdG9yZSAxMApsb2FkIDExCmFzc2VydApsb2FkIDEwCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQppbnRjXzMgLy8gOApleHRyYWN0X3VpbnQ2NApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDEKaW50Y18wIC8vIDAKZXh0cmFjdF91aW50NjQKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAxCmV4dHJhY3QgMTYgMzIKZnJhbWVfYnVyeSA0CmZyYW1lX2RpZyA0CnR4biBTZW5kZXIKPT0KYXNzZXJ0CnR4biBGaXJzdFZhbGlkVGltZQpmcmFtZV9kaWcgMwo+CmFzc2VydAppdHhuX2JlZ2luCmludGNfMSAvLyBwYXkKaXR4bl9maWVsZCBUeXBlRW51bQpmcmFtZV9kaWcgMgppdHhuX2ZpZWxkIEFtb3VudApmcmFtZV9kaWcgNAppdHhuX2ZpZWxkIFJlY2VpdmVyCml0eG5fc3VibWl0CnR4bmEgQXNzZXRzIDAKaXRvYgpib3hfZGVsCmFzc2VydAppbnRjXzEgLy8gMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBsaXN0X25mdF9jYXN0ZXIKbGlzdG5mdGNhc3Rlcl84Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwbiA0CnR4bmEgQXBwbGljYXRpb25BcmdzIDEKYnRvaQpmcmFtZV9idXJ5IDIKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgpidG9pCmZyYW1lX2J1cnkgMwp0eG5hIEFwcGxpY2F0aW9uQXJncyAzCmJ0b2kKZnJhbWVfYnVyeSA0CnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMiAvLyBheGZlcgo9PQphc3NlcnQKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDMKZnJhbWVfZGlnIDQKY2FsbHN1YiBsaXN0bmZ0XzIKZnJhbWVfYnVyeSAwCmJ5dGVjXzEgLy8gMHgxNTFmN2M3NQpieXRlY18yIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIDAKc2V0Yml0CmNvbmNhdApsb2cKcmV0c3ViCgovLyBkZWxpc3RfbmZ0X2Nhc3RlcgpkZWxpc3RuZnRjYXN0ZXJfOToKcHJvdG8gMCAwCmludGNfMCAvLyAwCmR1cAp0eG4gR3JvdXBJbmRleAppbnRjXzEgLy8gMQotCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpndHhucyBUeXBlRW51bQppbnRjXzEgLy8gcGF5Cj09CmFzc2VydApmcmFtZV9kaWcgMQpjYWxsc3ViIGRlbGlzdG5mdF8zCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKYnl0ZWNfMiAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1YgoKLy8gb3B0X2luX3RvX2Fzc2V0X2Nhc3RlcgpvcHRpbnRvYXNzZXRjYXN0ZXJfMTA6CnByb3RvIDAgMAppbnRjXzAgLy8gMApkdXAKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKY2FsbHN1YiBvcHRpbnRvYXNzZXRfNApmcmFtZV9idXJ5IDAKYnl0ZWNfMSAvLyAweDE1MWY3Yzc1CmJ5dGVjXzIgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWIKCi8vIHJlbnRfbmZ0X2Nhc3RlcgpyZW50bmZ0Y2FzdGVyXzExOgpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwbiAyCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKYnRvaQpmcmFtZV9idXJ5IDIKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIDIKY2FsbHN1YiByZW50bmZ0XzUKZnJhbWVfYnVyeSAwCmJ5dGVjXzEgLy8gMHgxNTFmN2M3NQpieXRlY18yIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIDAKc2V0Yml0CmNvbmNhdApsb2cKcmV0c3ViCgovLyByZXR1cm5fbmZ0X2Nhc3RlcgpyZXR1cm5uZnRjYXN0ZXJfMTI6CnByb3RvIDAgMAppbnRjXzAgLy8gMApkdXAKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18yIC8vIGF4ZmVyCj09CmFzc2VydApmcmFtZV9kaWcgMQpjYWxsc3ViIHJldHVybm5mdF82CmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKYnl0ZWNfMiAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1YgoKLy8gY2xhaW1fZGVwb3NpdF9jYXN0ZXIKY2xhaW1kZXBvc2l0Y2FzdGVyXzEzOgpwcm90byAwIDAKaW50Y18wIC8vIDAKY2FsbHN1YiBjbGFpbWRlcG9zaXRfNwpmcmFtZV9idXJ5IDAKYnl0ZWNfMSAvLyAweDE1MWY3Yzc1CmJ5dGVjXzIgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWI=",
         "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
     },
     "state": {
@@ -62,24 +77,43 @@ _APP_SPEC_JSON = r"""{
         }
     },
     "contract": {
-        "name": "algolenmain",
+        "name": "algolen",
         "methods": [
             {
-                "name": "init_algolen_nft_flow",
+                "name": "list_nft",
                 "args": [
                     {
                         "type": "axfer",
-                        "name": "assert_transfer_txn"
+                        "name": "asset_transfer_txn"
                     },
                     {
                         "type": "uint64",
-                        "name": "estimated_price_in_microalgos"
+                        "name": "deposit"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "price_per_day"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "max_duration_in_days"
                     }
                 ],
                 "returns": {
                     "type": "bool"
-                },
-                "desc": "The entry contract method for Algolen\nIt takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"
+                }
+            },
+            {
+                "name": "delist_nft",
+                "args": [
+                    {
+                        "type": "pay",
+                        "name": "fee_payment_txn"
+                    }
+                ],
+                "returns": {
+                    "type": "bool"
+                }
             },
             {
                 "name": "opt_in_to_asset",
@@ -92,23 +126,46 @@ _APP_SPEC_JSON = r"""{
                 "returns": {
                     "type": "bool"
                 },
-                "desc": "An opt-in contract method\nThat will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied"
+                "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
             },
             {
-                "name": "deposit_into_nft",
+                "name": "rent_nft",
                 "args": [
                     {
                         "type": "pay",
                         "name": "payment_txn"
+                    },
+                    {
+                        "type": "uint64",
+                        "name": "duration_in_days"
                     }
                 ],
+                "returns": {
+                    "type": "bool"
+                }
+            },
+            {
+                "name": "return_nft",
+                "args": [
+                    {
+                        "type": "axfer",
+                        "name": "asset_transfer_txn"
+                    }
+                ],
+                "returns": {
+                    "type": "bool"
+                }
+            },
+            {
+                "name": "claim_deposit",
+                "args": [],
                 "returns": {
                     "type": "bool"
                 }
             }
         ],
         "networks": {},
-        "desc": "Algolen Distribution Main Contract"
+        "desc": "Algolen Contract"
     },
     "bare_call_config": {
         "delete_application": "CALL",
@@ -190,22 +247,30 @@ def _convert_deploy_args(
 
 
 @dataclasses.dataclass(kw_only=True)
-class InitAlgolenNftFlowArgs(_ArgsBase[bool]):
-    """The entry contract method for Algolen
-    It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool"""
-
-    assert_transfer_txn: TransactionWithSigner
-    estimated_price_in_microalgos: int
+class ListNftArgs(_ArgsBase[bool]):
+    asset_transfer_txn: TransactionWithSigner
+    deposit: int
+    price_per_day: int
+    max_duration_in_days: int
 
     @staticmethod
     def method() -> str:
-        return "init_algolen_nft_flow(axfer,uint64)bool"
+        return "list_nft(axfer,uint64,uint64,uint64)bool"
+
+
+@dataclasses.dataclass(kw_only=True)
+class DelistNftArgs(_ArgsBase[bool]):
+    fee_payment_txn: TransactionWithSigner
+
+    @staticmethod
+    def method() -> str:
+        return "delist_nft(pay)bool"
 
 
 @dataclasses.dataclass(kw_only=True)
 class OptInToAssetArgs(_ArgsBase[bool]):
     """An opt-in contract method
-    That will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied"""
+    One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"""
 
     deposit_payment_txn: TransactionWithSigner
 
@@ -215,12 +280,29 @@ class OptInToAssetArgs(_ArgsBase[bool]):
 
 
 @dataclasses.dataclass(kw_only=True)
-class DepositIntoNftArgs(_ArgsBase[bool]):
+class RentNftArgs(_ArgsBase[bool]):
     payment_txn: TransactionWithSigner
+    duration_in_days: int
 
     @staticmethod
     def method() -> str:
-        return "deposit_into_nft(pay)bool"
+        return "rent_nft(pay,uint64)bool"
+
+
+@dataclasses.dataclass(kw_only=True)
+class ReturnNftArgs(_ArgsBase[bool]):
+    asset_transfer_txn: TransactionWithSigner
+
+    @staticmethod
+    def method() -> str:
+        return "return_nft(axfer)bool"
+
+
+@dataclasses.dataclass(kw_only=True)
+class ClaimDepositArgs(_ArgsBase[bool]):
+    @staticmethod
+    def method() -> str:
+        return "claim_deposit()bool"
 
 
 class Composer:
@@ -235,26 +317,52 @@ class Composer:
     def execute(self) -> AtomicTransactionResponse:
         return self.app_client.execute_atc(self.atc)
 
-    def init_algolen_nft_flow(
+    def list_nft(
         self,
         *,
-        assert_transfer_txn: TransactionWithSigner,
-        estimated_price_in_microalgos: int,
+        asset_transfer_txn: TransactionWithSigner,
+        deposit: int,
+        price_per_day: int,
+        max_duration_in_days: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """The entry contract method for Algolen
-        It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
+        """Adds a call to `list_nft(axfer,uint64,uint64,uint64)bool` ABI method
         
-        Adds a call to `init_algolen_nft_flow(axfer,uint64)bool` ABI method
-        
-        :param TransactionWithSigner assert_transfer_txn: The `assert_transfer_txn` ABI parameter
-        :param int estimated_price_in_microalgos: The `estimated_price_in_microalgos` ABI parameter
+        :param TransactionWithSigner asset_transfer_txn: The `asset_transfer_txn` ABI parameter
+        :param int deposit: The `deposit` ABI parameter
+        :param int price_per_day: The `price_per_day` ABI parameter
+        :param int max_duration_in_days: The `max_duration_in_days` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
-        args = InitAlgolenNftFlowArgs(
-            assert_transfer_txn=assert_transfer_txn,
-            estimated_price_in_microalgos=estimated_price_in_microalgos,
+        args = ListNftArgs(
+            asset_transfer_txn=asset_transfer_txn,
+            deposit=deposit,
+            price_per_day=price_per_day,
+            max_duration_in_days=max_duration_in_days,
+        )
+        self.app_client.compose_call(
+            self.atc,
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return self
+
+    def delist_nft(
+        self,
+        *,
+        fee_payment_txn: TransactionWithSigner,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> "Composer":
+        """Adds a call to `delist_nft(pay)bool` ABI method
+        
+        :param TransactionWithSigner fee_payment_txn: The `fee_payment_txn` ABI parameter
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns Composer: This Composer instance"""
+
+        args = DelistNftArgs(
+            fee_payment_txn=fee_payment_txn,
         )
         self.app_client.compose_call(
             self.atc,
@@ -271,7 +379,7 @@ class Composer:
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
         """An opt-in contract method
-        That will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied
+        One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
         
         Adds a call to `opt_in_to_asset(pay)bool` ABI method
         
@@ -290,21 +398,66 @@ class Composer:
         )
         return self
 
-    def deposit_into_nft(
+    def rent_nft(
         self,
         *,
         payment_txn: TransactionWithSigner,
+        duration_in_days: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """Adds a call to `deposit_into_nft(pay)bool` ABI method
+        """Adds a call to `rent_nft(pay,uint64)bool` ABI method
         
         :param TransactionWithSigner payment_txn: The `payment_txn` ABI parameter
+        :param int duration_in_days: The `duration_in_days` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
-        args = DepositIntoNftArgs(
+        args = RentNftArgs(
             payment_txn=payment_txn,
+            duration_in_days=duration_in_days,
         )
+        self.app_client.compose_call(
+            self.atc,
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return self
+
+    def return_nft(
+        self,
+        *,
+        asset_transfer_txn: TransactionWithSigner,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> "Composer":
+        """Adds a call to `return_nft(axfer)bool` ABI method
+        
+        :param TransactionWithSigner asset_transfer_txn: The `asset_transfer_txn` ABI parameter
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns Composer: This Composer instance"""
+
+        args = ReturnNftArgs(
+            asset_transfer_txn=asset_transfer_txn,
+        )
+        self.app_client.compose_call(
+            self.atc,
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return self
+
+    def claim_deposit(
+        self,
+        *,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> "Composer":
+        """Adds a call to `claim_deposit()bool` ABI method
+        
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns Composer: This Composer instance"""
+
+        args = ClaimDepositArgs()
         self.app_client.compose_call(
             self.atc,
             call_abi_method=args.method(),
@@ -380,10 +533,10 @@ class Composer:
         return self
 
 
-class AlgolenmainClient:
-    """Algolen Distribution Main Contract
+class AlgolenClient:
+    """Algolen Contract
     
-    A class for interacting with the algolenmain app providing high productivity and
+    A class for interacting with the algolen app providing high productivity and
     strongly typed methods to deploy and call the app"""
 
     @typing.overload
@@ -431,7 +584,7 @@ class AlgolenmainClient:
         app_name: str | None = None,
     ) -> None:
         """
-        AlgolenmainClient can be created with an app_id to interact with an existing application, alternatively
+        AlgolenClient can be created with an app_id to interact with an existing application, alternatively
         it can be created with a creator and indexer_client specified to find existing applications by name and creator.
         
         :param AlgodClient algod_client: AlgoSDK algod client
@@ -508,26 +661,51 @@ class AlgolenmainClient:
     def suggested_params(self, value: algosdk.transaction.SuggestedParams | None) -> None:
         self.app_client.suggested_params = value
 
-    def init_algolen_nft_flow(
+    def list_nft(
         self,
         *,
-        assert_transfer_txn: TransactionWithSigner,
-        estimated_price_in_microalgos: int,
+        asset_transfer_txn: TransactionWithSigner,
+        deposit: int,
+        price_per_day: int,
+        max_duration_in_days: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[bool]:
-        """The entry contract method for Algolen
-        It takes an AssetTransferTransaction as a parameter, checks if the contract is opted into the NFT, (implying checks were done previously) then locks the NFT into the contract's account, and creates a pool
+        """Calls `list_nft(axfer,uint64,uint64,uint64)bool` ABI method
         
-        Calls `init_algolen_nft_flow(axfer,uint64)bool` ABI method
-        
-        :param TransactionWithSigner assert_transfer_txn: The `assert_transfer_txn` ABI parameter
-        :param int estimated_price_in_microalgos: The `estimated_price_in_microalgos` ABI parameter
+        :param TransactionWithSigner asset_transfer_txn: The `asset_transfer_txn` ABI parameter
+        :param int deposit: The `deposit` ABI parameter
+        :param int price_per_day: The `price_per_day` ABI parameter
+        :param int max_duration_in_days: The `max_duration_in_days` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
 
-        args = InitAlgolenNftFlowArgs(
-            assert_transfer_txn=assert_transfer_txn,
-            estimated_price_in_microalgos=estimated_price_in_microalgos,
+        args = ListNftArgs(
+            asset_transfer_txn=asset_transfer_txn,
+            deposit=deposit,
+            price_per_day=price_per_day,
+            max_duration_in_days=max_duration_in_days,
+        )
+        result = self.app_client.call(
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return result
+
+    def delist_nft(
+        self,
+        *,
+        fee_payment_txn: TransactionWithSigner,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> algokit_utils.ABITransactionResponse[bool]:
+        """Calls `delist_nft(pay)bool` ABI method
+        
+        :param TransactionWithSigner fee_payment_txn: The `fee_payment_txn` ABI parameter
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
+
+        args = DelistNftArgs(
+            fee_payment_txn=fee_payment_txn,
         )
         result = self.app_client.call(
             call_abi_method=args.method(),
@@ -543,7 +721,7 @@ class AlgolenmainClient:
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[bool]:
         """An opt-in contract method
-        That will make the contract to opt-in to an NFT asset, if the asset is valid for Fractic, which means decimals is 0, and total is 1 provided that the 5 Algo deposit is supplied
+        One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
         
         Calls `opt_in_to_asset(pay)bool` ABI method
         
@@ -561,21 +739,64 @@ class AlgolenmainClient:
         )
         return result
 
-    def deposit_into_nft(
+    def rent_nft(
         self,
         *,
         payment_txn: TransactionWithSigner,
+        duration_in_days: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[bool]:
-        """Calls `deposit_into_nft(pay)bool` ABI method
+        """Calls `rent_nft(pay,uint64)bool` ABI method
         
         :param TransactionWithSigner payment_txn: The `payment_txn` ABI parameter
+        :param int duration_in_days: The `duration_in_days` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
 
-        args = DepositIntoNftArgs(
+        args = RentNftArgs(
             payment_txn=payment_txn,
+            duration_in_days=duration_in_days,
         )
+        result = self.app_client.call(
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return result
+
+    def return_nft(
+        self,
+        *,
+        asset_transfer_txn: TransactionWithSigner,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> algokit_utils.ABITransactionResponse[bool]:
+        """Calls `return_nft(axfer)bool` ABI method
+        
+        :param TransactionWithSigner asset_transfer_txn: The `asset_transfer_txn` ABI parameter
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
+
+        args = ReturnNftArgs(
+            asset_transfer_txn=asset_transfer_txn,
+        )
+        result = self.app_client.call(
+            call_abi_method=args.method(),
+            transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
+            **_as_dict(args, convert_all=True),
+        )
+        return result
+
+    def claim_deposit(
+        self,
+        *,
+        transaction_parameters: algokit_utils.TransactionParameters | None = None,
+    ) -> algokit_utils.ABITransactionResponse[bool]:
+        """Calls `claim_deposit()bool` ABI method
+        
+        :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
+        :returns algokit_utils.ABITransactionResponse[bool]: The result of the transaction"""
+
+        args = ClaimDepositArgs()
         result = self.app_client.call(
             call_abi_method=args.method(),
             transaction_parameters=_convert_call_transaction_parameters(transaction_parameters),
