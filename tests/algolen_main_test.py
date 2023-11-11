@@ -209,3 +209,101 @@ def test_list_delist_nft(
     balance_after = algod_client.account_info(algolen.app_address)["amount"]
 
     assert balance_before == balance_after
+
+
+@pytest.mark.parametrize("total", [1])
+def test_rent_return(
+    algod_client: AlgodClient,
+    algolen: ApplicationClient,
+    create_valid_nft: int,
+):
+    signer = get_localnet_default_account(algod_client)
+
+    params = algod_client.suggested_params()
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1_000_000,
+    )
+
+    algolen.call(
+        "opt_in_to_asset",
+        deposit_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        transaction_parameters={
+            "foreign_assets": [create_valid_nft],
+        },
+    )
+
+    balance_before = algod_client.account_info(algolen.app_address)["amount"]
+
+    xfer_txn = transaction.AssetTransferTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1,
+        index=create_valid_nft,
+    )
+    assert algolen.call(
+        "list_nft",
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        deposit=1_000_000,
+        price_per_day=100_000_000,
+        max_duration_in_days=5,
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    unsigned_pmtxn = transaction.PaymentTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=4_000 + 1_000_000 + (100_000_000 * 2),
+    )
+
+    assert algolen.call(
+        "rent_nft",
+        payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
+        duration_in_days=2,
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    xfer_txn = transaction.AssetTransferTxn(
+        sender=signer.address,
+        sp=params,
+        receiver=algolen.app_address,
+        amt=1,
+        index=create_valid_nft,
+    )
+    assert algolen.call(
+        "return_nft",
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        transaction_parameters={
+            "boxes": [
+                (
+                    algolen.app_id,
+                    encode_as_bytes(create_valid_nft),
+                ),
+            ],
+            "foreign_assets": [create_valid_nft],
+        },
+    ).return_value
+
+    balance_after = algod_client.account_info(algolen.app_address)["amount"]
+    assert balance_before == balance_after

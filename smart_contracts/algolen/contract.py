@@ -207,12 +207,14 @@ def return_nft(
     deposit = pt.abi.make(pt.abi.Uint64)
     end_date = pt.abi.make(pt.abi.Uint64)
     asset_owner = pt.abi.make(pt.abi.Address)
+    asset_renter = pt.abi.make(pt.abi.Address)
     return pt.Seq(
         pt.Assert(pt.Txn.assets[0] == asset_transfer_txn.get().xfer_asset()),
         app.state.rents[pt.Itob(asset_id)].store_into(rent),
         (rent.deposit.store_into(deposit)),
         (rent.end_date.store_into(end_date)),
         (rent.asset_owner.store_into(asset_owner)),
+        (rent.asset_renter.store_into(asset_renter)),
         pt.Assert(pt.Txn.first_valid_time() < end_date.get()),
         pt.InnerTxnBuilder.Execute(
             {
@@ -225,7 +227,7 @@ def return_nft(
             {
                 pt.TxnField.type_enum: pt.TxnType.AssetTransfer,
                 pt.TxnField.asset_amount: pt.Int(1),
-                pt.TxnField.receiver: asset_owner.get(),
+                pt.TxnField.asset_receiver: asset_owner.get(),
                 pt.TxnField.xfer_asset: asset_id,
             }
         ),
