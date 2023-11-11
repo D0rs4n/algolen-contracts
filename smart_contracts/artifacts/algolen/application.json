@@ -105,7 +105,7 @@
                 "returns": {
                     "type": "bool"
                 },
-                "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
+                "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
             },
             {
                 "name": "rent_nft",

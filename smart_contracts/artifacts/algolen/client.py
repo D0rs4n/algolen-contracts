@@ -126,7 +126,7 @@ _APP_SPEC_JSON = r"""{
                 "returns": {
                     "type": "bool"
                 },
-                "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
+                "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
             },
             {
                 "name": "rent_nft",
@@ -270,7 +270,7 @@ class DelistNftArgs(_ArgsBase[bool]):
 @dataclasses.dataclass(kw_only=True)
 class OptInToAssetArgs(_ArgsBase[bool]):
     """An opt-in contract method
-    One time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"""
+    One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"""
 
     deposit_payment_txn: TransactionWithSigner
 
@@ -379,7 +379,7 @@ class Composer:
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
         """An opt-in contract method
-        One time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
+        One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
         
         Adds a call to `opt_in_to_asset(pay)bool` ABI method
         
@@ -721,7 +721,7 @@ class AlgolenClient:
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[bool]:
         """An opt-in contract method
-        One time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
+        One time payment of LISTING_FEE_MICROALGO amount covers opt in, box creation for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT
         
         Calls `opt_in_to_asset(pay)bool` ABI method
         
