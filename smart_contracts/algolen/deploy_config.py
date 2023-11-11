@@ -14,11 +14,11 @@ def deploy(
     app_spec: algokit_utils.ApplicationSpecification,
     deployer: algokit_utils.Account,
 ) -> None:
-    from smart_contracts.artifacts.fracticdistribution.client import (
-        FracticdistributionClient,
+    from smart_contracts.artifacts.algolen.client import (
+        AlgolenClient,
     )
 
-    app_client = FracticdistributionClient(
+    app_client = AlgolenClient(
         algod_client,
         creator=deployer,
         indexer_client=indexer_client,

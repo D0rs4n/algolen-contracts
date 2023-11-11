@@ -1,20 +1,20 @@
 #pragma version 8
-intcblock 0 1 4 32
-bytecblock 0x 0x64 0x00 0x70 0x151f7c75 0x72
+intcblock 0 1 4
+bytecblock 0x 0x151f7c75 0x00
 txn NumAppArgs
 intc_0 // 0
 ==
 bnz main_l8
 txna ApplicationArgs 0
-pushbytes 0x9169c66a // "init_algolen_nft_flow(axfer,uint64)bool"
+pushbytes 0x53416d38 // "list_nft(axfer,uint64,uint64,uint64)bool"
 ==
 bnz main_l7
 txna ApplicationArgs 0
-pushbytes 0x2edef112 // "opt_in_to_asset(pay)bool"
+pushbytes 0x26a05484 // "delist_nft(pay,uint64)bool"
 ==
 bnz main_l6
 txna ApplicationArgs 0
-pushbytes 0x2f4f021d // "deposit_into_nft(pay)bool"
+pushbytes 0x2edef112 // "opt_in_to_asset(pay)bool"
 ==
 bnz main_l5
 err
@@ -27,7 +27,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub depositintonftcaster_7
+callsub optintoassetcaster_7
 intc_1 // 1
 return
 main_l6:
@@ -39,7 +39,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub optintoassetcaster_6
+callsub delistnftcaster_6
 intc_1 // 1
 return
 main_l7:
@@ -51,7 +51,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub initalgolennftflowcaster_5
+callsub listnftcaster_5
 intc_1 // 1
 return
 main_l8:
@@ -118,99 +118,111 @@ pushint TMPL_DELETABLE // TMPL_DELETABLE
 assert
 retsub
 
-// init_algolen_nft_flow
-initalgolennftflow_2:
-proto 2 1
+// list_nft
+listnft_2:
+proto 4 1
 intc_0 // 0
 bytec_0 // ""
 intc_0 // 0
-dup
 bytec_0 // ""
 intc_0 // 0
 dup
 bytec_0 // ""
 dup
 txna Assets 0
-frame_dig -2
+frame_dig -4
 gtxns XferAsset
 ==
 assert
-bytec_1 // "d"
 txna Assets 0
-itob
-concat
-box_len
-store 1
-store 0
-load 1
-assert
-bytec_1 // "d"
-txna Assets 0
-itob
-concat
-box_get
-store 3
-store 2
-load 3
-assert
-load 2
-txn Sender
-==
-assert
-intc_0 // 0
 frame_bury 2
 txn Sender
 frame_bury 1
 frame_dig 1
 len
-intc_3 // 32
+pushint 32 // 32
 ==
 assert
-intc_1 // 1
-frame_bury 3
 frame_dig 2
 itob
+frame_dig -3
+itob
+concat
+frame_dig -2
+itob
+concat
 frame_dig -1
 itob
 concat
 frame_dig 1
 concat
-bytec_2 // 0x00
-intc_0 // 0
-frame_dig 3
-setbit
-concat
-frame_bury 4
-bytec_3 // "p"
-txna Assets 0
+frame_bury 3
+frame_dig 2
 itob
-concat
 box_del
 pop
-bytec_3 // "p"
-txna Assets 0
+frame_dig 2
 itob
-concat
-frame_dig 4
+frame_dig 3
 box_put
 intc_1 // 1
 frame_bury 0
 retsub
 
+// delist_nft
+delistnft_3:
+proto 2 1
+intc_0 // 0
+bytec_0 // ""
+dup
+frame_dig -2
+gtxns Receiver
+global CurrentApplicationAddress
+==
+assert
+frame_dig -2
+gtxns Amount
+pushint 1000 // 1000
+==
+assert
+frame_dig -1
+itob
+box_get
+store 1
+store 0
+load 1
+assert
+load 0
+frame_bury 1
+frame_dig 1
+extract 32 0
+frame_bury 2
+frame_dig 2
+txn Sender
+==
+assert
+itxn_begin
+intc_2 // axfer
+itxn_field TypeEnum
+intc_1 // 1
+itxn_field AssetAmount
+txn Sender
+itxn_field AssetReceiver
+frame_dig -1
+itxn_field XferAsset
+itxn_submit
+frame_dig -1
+itob
+box_del
+assert
+intc_1 // 1
+frame_bury 0
+retsub
+
 // opt_in_to_asset
-optintoasset_3:
+optintoasset_4:
 proto 1 1
 intc_0 // 0
-bytec_1 // "d"
-txna Assets 0
-itob
-concat
-box_len
-store 5
-store 4
-load 5
-!
-assert
 txn NumAssets
 intc_0 // 0
 ==
@@ -218,32 +230,22 @@ intc_0 // 0
 assert
 txna Assets 0
 asset_params_get AssetDecimals
-store 7
-store 6
-load 7
+store 3
+store 2
+load 3
 assert
-load 6
+load 2
 intc_0 // 0
 ==
 assert
 txna Assets 0
 asset_params_get AssetTotal
-store 9
-store 8
-load 9
+store 5
+store 4
+load 5
 assert
-load 8
+load 4
 intc_1 // 1
-==
-assert
-txna Assets 0
-asset_params_get AssetCreator
-store 11
-store 10
-load 11
-assert
-load 10
-txn Sender
 ==
 assert
 frame_dig -1
@@ -258,7 +260,7 @@ global CurrentApplicationAddress
 assert
 frame_dig -1
 gtxns Amount
-pushint 100000 // 100000
+pushint 1000000 // 1000000
 ==
 assert
 itxn_begin
@@ -271,107 +273,50 @@ itxn_field AssetReceiver
 txna Assets 0
 itxn_field XferAsset
 itxn_submit
-bytec_1 // "d"
-txna Assets 0
-itob
-concat
-box_del
-pop
-bytec_1 // "d"
-txna Assets 0
-itob
-concat
-txn Sender
-box_put
 intc_1 // 1
 frame_bury 0
 retsub
 
-// deposit_into_nft
-depositintonft_4:
-proto 1 1
+// list_nft_caster
+listnftcaster_5:
+proto 0 0
 intc_0 // 0
-bytec_0 // ""
-intc_0 // 0
-dup
-bytec_0 // ""
-dup
-intc_0 // 0
-bytec_0 // ""
-intc_0 // 0
-dup
-bytec_0 // ""
-dup
-bytec_1 // "d"
-txna Assets 0
-itob
-concat
-box_len
-store 13
-store 12
-load 13
-assert
-bytec_3 // "p"
-txna Assets 0
-itob
-concat
-box_get
-store 15
-store 14
-load 15
-assert
-load 14
+dupn 4
+txna ApplicationArgs 1
+btoi
+frame_bury 2
+txna ApplicationArgs 2
+btoi
+frame_bury 3
+txna ApplicationArgs 3
+btoi
+frame_bury 4
+txn GroupIndex
+intc_1 // 1
+-
 frame_bury 1
 frame_dig 1
-pushint 8 // 8
-extract_uint64
-frame_bury 3
+gtxns TypeEnum
+intc_2 // axfer
+==
+assert
 frame_dig 1
-extract 16 32
-frame_bury 4
-txn Sender
-frame_bury 5
-frame_dig 5
-len
-intc_3 // 32
-==
-assert
-frame_dig -1
-gtxns Amount
+frame_dig 2
 frame_dig 3
-==
-assert
-txn FirstValidTime
-frame_bury 2
-pushint 2630000 // 2630000
-txn FirstValidTime
-+
-frame_bury 6
-frame_dig 6
-itob
 frame_dig 4
-concat
-frame_dig 5
-concat
-frame_bury 7
-bytec 5 // "r"
-txna Assets 0
-itob
-concat
-box_del
-pop
-bytec 5 // "r"
-txna Assets 0
-itob
-concat
-frame_dig 7
-box_put
-intc_1 // 1
+callsub listnft_2
 frame_bury 0
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
+intc_0 // 0
+frame_dig 0
+setbit
+concat
+log
 retsub
 
-// init_algolen_nft_flow_caster
-initalgolennftflowcaster_5:
+// delist_nft_caster
+delistnftcaster_6:
 proto 0 0
 intc_0 // 0
 dupn 2
@@ -384,14 +329,14 @@ intc_1 // 1
 frame_bury 1
 frame_dig 1
 gtxns TypeEnum
-intc_2 // axfer
+intc_1 // pay
 ==
 assert
 frame_dig 1
 frame_dig 2
-callsub initalgolennftflow_2
+callsub delistnft_3
 frame_bury 0
-bytec 4 // 0x151f7c75
+bytec_1 // 0x151f7c75
 bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
@@ -401,7 +346,7 @@ log
 retsub
 
 // opt_in_to_asset_caster
-optintoassetcaster_6:
+optintoassetcaster_7:
 proto 0 0
 intc_0 // 0
 dup
@@ -415,35 +360,9 @@ intc_1 // pay
 ==
 assert
 frame_dig 1
-callsub optintoasset_3
+callsub optintoasset_4
 frame_bury 0
-bytec 4 // 0x151f7c75
-bytec_2 // 0x00
-intc_0 // 0
-frame_dig 0
-setbit
-concat
-log
-retsub
-
-// deposit_into_nft_caster
-depositintonftcaster_7:
-proto 0 0
-intc_0 // 0
-dup
-txn GroupIndex
-intc_1 // 1
--
-frame_bury 1
-frame_dig 1
-gtxns TypeEnum
-intc_1 // pay
-==
-assert
-frame_dig 1
-callsub depositintonft_4
-frame_bury 0
-bytec 4 // 0x151f7c75
+bytec_1 // 0x151f7c75
 bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0

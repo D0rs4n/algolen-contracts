@@ -1,0 +1,60 @@
+{
+    "name": "algolen",
+    "methods": [
+        {
+            "name": "list_nft",
+            "args": [
+                {
+                    "type": "axfer",
+                    "name": "assert_transfer_txn"
+                },
+                {
+                    "type": "uint64",
+                    "name": "deposit"
+                },
+                {
+                    "type": "uint64",
+                    "name": "price_per_day"
+                },
+                {
+                    "type": "uint64",
+                    "name": "max_duration_in_days"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        },
+        {
+            "name": "delist_nft",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "fee_payment_txn"
+                },
+                {
+                    "type": "uint64",
+                    "name": "asset_id"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        },
+        {
+            "name": "opt_in_to_asset",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "deposit_payment_txn"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            },
+            "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
+        }
+    ],
+    "networks": {},
+    "desc": "Algolen Contract"
+}
