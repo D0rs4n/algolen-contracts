@@ -6,7 +6,7 @@
             "args": [
                 {
                     "type": "axfer",
-                    "name": "assert_transfer_txn"
+                    "name": "asset_transfer_txn"
                 },
                 {
                     "type": "uint64",
@@ -31,10 +31,6 @@
                 {
                     "type": "pay",
                     "name": "fee_payment_txn"
-                },
-                {
-                    "type": "uint64",
-                    "name": "asset_id"
                 }
             ],
             "returns": {
@@ -53,6 +49,41 @@
                 "type": "bool"
             },
             "desc": "An opt-in contract method\nOne time payment of LISTING_FEE_MICROALGO amount that covers opt in and box creation expenses for this nft and a small fee for the platform usage This fee is to be paid per NFT and permanently enables the listing of this NFT"
+        },
+        {
+            "name": "rent_nft",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "payment_txn"
+                },
+                {
+                    "type": "uint64",
+                    "name": "duration_in_days"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        },
+        {
+            "name": "return_nft",
+            "args": [
+                {
+                    "type": "axfer",
+                    "name": "asset_transfer_txn"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        },
+        {
+            "name": "claim_deposit",
+            "args": [],
+            "returns": {
+                "type": "bool"
+            }
         }
     ],
     "networks": {},

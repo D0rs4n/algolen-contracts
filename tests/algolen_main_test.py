@@ -170,7 +170,7 @@ def test_list_delist_nft(
     )
     assert algolen.call(
         "list_nft",
-        assert_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
+        asset_transfer_txn=TransactionWithSigner(xfer_txn, signer.signer),
         deposit=10_000_000,
         price_per_day=1_000_000,
         max_duration_in_days=2,
@@ -195,7 +195,6 @@ def test_list_delist_nft(
     assert algolen.call(
         "delist_nft",
         fee_payment_txn=TransactionWithSigner(unsigned_pmtxn, signer.signer),
-        asset_id=create_valid_nft,
         transaction_parameters={
             "boxes": [
                 (
