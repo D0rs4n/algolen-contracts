@@ -79,13 +79,6 @@
             }
         },
         {
-            "name": "retrieve_nft",
-            "args": [],
-            "returns": {
-                "type": "bool"
-            }
-        },
-        {
             "name": "claim_deposit",
             "args": [],
             "returns": {

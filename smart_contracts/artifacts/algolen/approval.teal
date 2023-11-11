@@ -1,39 +1,47 @@
 #pragma version 8
 intcblock 0 1 4 8
-bytecblock 0x 0x00 0x151f7c75
+bytecblock 0x 0x151f7c75 0x00
 txn NumAppArgs
 intc_0 // 0
 ==
-bnz main_l16
+bnz main_l14
 txna ApplicationArgs 0
 pushbytes 0x53416d38 // "list_nft(axfer,uint64,uint64,uint64)bool"
 ==
-bnz main_l15
+bnz main_l13
 txna ApplicationArgs 0
 pushbytes 0xe0d1da6c // "delist_nft(pay)bool"
 ==
-bnz main_l14
+bnz main_l12
 txna ApplicationArgs 0
 pushbytes 0x2edef112 // "opt_in_to_asset(pay)bool"
 ==
-bnz main_l13
+bnz main_l11
 txna ApplicationArgs 0
 pushbytes 0x98383fd3 // "rent_nft(pay,uint64)bool"
 ==
-bnz main_l12
+bnz main_l10
 txna ApplicationArgs 0
 pushbytes 0x30c5474f // "return_nft(axfer)bool"
 ==
-bnz main_l11
-txna ApplicationArgs 0
-pushbytes 0x9c5a14f2 // "retrieve_nft()bool"
-==
-bnz main_l10
+bnz main_l9
 txna ApplicationArgs 0
 pushbytes 0x98d25c0e // "claim_deposit()bool"
 ==
-bnz main_l9
+bnz main_l8
 err
+main_l8:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub claimdepositcaster_13
+intc_1 // 1
+return
 main_l9:
 txn OnCompletion
 intc_0 // NoOp
@@ -43,7 +51,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub claimdepositcaster_15
+callsub returnnftcaster_12
 intc_1 // 1
 return
 main_l10:
@@ -55,7 +63,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub retrievenftcaster_14
+callsub rentnftcaster_11
 intc_1 // 1
 return
 main_l11:
@@ -67,7 +75,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub returnnftcaster_13
+callsub optintoassetcaster_10
 intc_1 // 1
 return
 main_l12:
@@ -79,7 +87,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub rentnftcaster_12
+callsub delistnftcaster_9
 intc_1 // 1
 return
 main_l13:
@@ -91,48 +99,24 @@ intc_0 // 0
 !=
 &&
 assert
-callsub optintoassetcaster_11
+callsub listnftcaster_8
 intc_1 // 1
 return
 main_l14:
 txn OnCompletion
 intc_0 // NoOp
 ==
-txn ApplicationID
-intc_0 // 0
-!=
-&&
-assert
-callsub delistnftcaster_10
-intc_1 // 1
-return
-main_l15:
-txn OnCompletion
-intc_0 // NoOp
-==
-txn ApplicationID
-intc_0 // 0
-!=
-&&
-assert
-callsub listnftcaster_9
-intc_1 // 1
-return
-main_l16:
-txn OnCompletion
-intc_0 // NoOp
-==
-bnz main_l22
+bnz main_l20
 txn OnCompletion
 intc_2 // UpdateApplication
 ==
-bnz main_l21
+bnz main_l19
 txn OnCompletion
 pushint 5 // DeleteApplication
 ==
-bnz main_l20
+bnz main_l18
 err
-main_l20:
+main_l18:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -140,7 +124,7 @@ assert
 callsub delete_1
 intc_1 // 1
 return
-main_l21:
+main_l19:
 txn ApplicationID
 intc_0 // 0
 !=
@@ -148,7 +132,7 @@ assert
 callsub update_0
 intc_1 // 1
 return
-main_l22:
+main_l20:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -345,7 +329,6 @@ dupn 2
 bytec_0 // ""
 dup
 intc_0 // 0
-dup
 bytec_0 // ""
 intc_0 // 0
 dup
@@ -382,8 +365,6 @@ len
 pushint 32 // 32
 ==
 assert
-intc_0 // 0
-frame_bury 8
 frame_dig 4
 frame_dig -1
 >=
@@ -414,12 +395,7 @@ frame_dig 5
 concat
 frame_dig 6
 concat
-bytec_1 // 0x00
-intc_0 // 0
-frame_dig 8
-setbit
-concat
-frame_bury 9
+frame_bury 8
 txna Assets 0
 itob
 box_del
@@ -430,7 +406,7 @@ box_del
 pop
 txna Assets 0
 itob
-frame_dig 9
+frame_dig 8
 box_put
 itxn_begin
 intc_2 // axfer
@@ -465,12 +441,6 @@ intc_0 // 0
 dup
 bytec_0 // ""
 dup
-intc_0 // 0
-bytec_0 // ""
-intc_0 // 0
-dup
-bytec_0 // ""
-dup
 txna Assets 0
 frame_dig -1
 gtxns XferAsset
@@ -497,10 +467,8 @@ frame_dig 1
 extract 16 32
 frame_bury 4
 frame_dig 1
-extract 48 32
+extract 48 0
 frame_bury 5
-intc_1 // 1
-frame_bury 6
 txn FirstValidTime
 frame_dig 3
 <
@@ -513,68 +481,6 @@ itxn_field Amount
 txn Sender
 itxn_field Receiver
 itxn_submit
-frame_dig 3
-itob
-frame_dig 2
-itob
-concat
-frame_dig 4
-concat
-frame_dig 5
-concat
-bytec_1 // 0x00
-intc_0 // 0
-frame_dig 6
-setbit
-concat
-frame_bury 7
-txna Assets 0
-itob
-box_del
-pop
-txna Assets 0
-itob
-frame_dig 7
-box_put
-intc_1 // 1
-frame_bury 0
-retsub
-
-// retrieve_nft
-retrievenft_7:
-proto 0 1
-intc_0 // 0
-bytec_0 // ""
-intc_0 // 0
-dup
-bytec_0 // ""
-intc_0 // 0
-txna Assets 0
-itob
-box_get
-store 11
-store 10
-load 11
-assert
-load 10
-frame_bury 1
-frame_dig 1
-intc_3 // 8
-extract_uint64
-frame_bury 2
-frame_dig 1
-intc_0 // 0
-extract_uint64
-frame_bury 3
-frame_dig 1
-extract 16 32
-frame_bury 4
-txn Sender
-frame_dig 4
-==
-assert
-frame_dig 5
-assert
 itxn_begin
 intc_2 // axfer
 itxn_field TypeEnum
@@ -594,7 +500,7 @@ frame_bury 0
 retsub
 
 // claim_deposit
-claimdeposit_8:
+claimdeposit_7:
 proto 0 1
 intc_0 // 0
 bytec_0 // ""
@@ -604,11 +510,11 @@ bytec_0 // ""
 txna Assets 0
 itob
 box_get
-store 13
-store 12
-load 13
+store 11
+store 10
+load 11
 assert
-load 12
+load 10
 frame_bury 1
 frame_dig 1
 intc_3 // 8
@@ -646,7 +552,7 @@ frame_bury 0
 retsub
 
 // list_nft_caster
-listnftcaster_9:
+listnftcaster_8:
 proto 0 0
 intc_0 // 0
 dupn 4
@@ -674,8 +580,8 @@ frame_dig 3
 frame_dig 4
 callsub listnft_2
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -684,7 +590,7 @@ log
 retsub
 
 // delist_nft_caster
-delistnftcaster_10:
+delistnftcaster_9:
 proto 0 0
 intc_0 // 0
 dup
@@ -700,8 +606,8 @@ assert
 frame_dig 1
 callsub delistnft_3
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -710,7 +616,7 @@ log
 retsub
 
 // opt_in_to_asset_caster
-optintoassetcaster_11:
+optintoassetcaster_10:
 proto 0 0
 intc_0 // 0
 dup
@@ -726,8 +632,8 @@ assert
 frame_dig 1
 callsub optintoasset_4
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -736,7 +642,7 @@ log
 retsub
 
 // rent_nft_caster
-rentnftcaster_12:
+rentnftcaster_11:
 proto 0 0
 intc_0 // 0
 dupn 2
@@ -756,8 +662,8 @@ frame_dig 1
 frame_dig 2
 callsub rentnft_5
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -766,7 +672,7 @@ log
 retsub
 
 // return_nft_caster
-returnnftcaster_13:
+returnnftcaster_12:
 proto 0 0
 intc_0 // 0
 dup
@@ -782,23 +688,8 @@ assert
 frame_dig 1
 callsub returnnft_6
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
-intc_0 // 0
-frame_dig 0
-setbit
-concat
-log
-retsub
-
-// retrieve_nft_caster
-retrievenftcaster_14:
-proto 0 0
-intc_0 // 0
-callsub retrievenft_7
-frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -807,13 +698,13 @@ log
 retsub
 
 // claim_deposit_caster
-claimdepositcaster_15:
+claimdepositcaster_13:
 proto 0 0
 intc_0 // 0
-callsub claimdeposit_8
+callsub claimdeposit_7
 frame_bury 0
-bytec_2 // 0x151f7c75
-bytec_1 // 0x00
+bytec_1 // 0x151f7c75
+bytec_2 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
