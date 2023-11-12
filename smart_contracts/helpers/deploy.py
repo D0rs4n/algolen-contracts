@@ -30,10 +30,10 @@ def deploy(
     # get clients
     # by default client configuration is loaded from environment variables
     algod_client = get_algod_client(
-        network_clients.get_default_localnet_config("algod")
+        network_clients.get_algonode_config("testnet", "algod", "")
     )
     indexer_client = get_indexer_client(
-        network_clients.get_default_localnet_config("indexer")
+        network_clients.get_algonode_config("testnet", "indexer", "")
     )
 
     # get app spec
