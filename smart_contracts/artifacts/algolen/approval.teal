@@ -373,6 +373,10 @@ len
 pushint 32 // 32
 ==
 assert
+frame_dig -1
+intc_0 // 0
+>
+assert
 frame_dig 4
 frame_dig -1
 >=

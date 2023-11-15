@@ -6,7 +6,6 @@ from .data_utils import MappingState, AlgolenListing, AlgolenRent
 
 DAY_IN_SECONDS = 86_400
 LISTING_FEE_MICROALGO = 1_000_000
-MINIMUM_RENT_PER_DAY = 1_000
 
 # this pays for asset transfer to owner
 DELIST_FEE_MICROALGO = 1_000
@@ -158,6 +157,7 @@ def rent_nft(
         (listing.max_duration_in_days.store_into(max_duration_in_days)),
         (listing.owner.store_into(asset_owner)),
         (asset_renter.set(pt.Txn.sender())),
+        pt.Assert(duration_in_days.get() > pt.Int(0)),
         pt.Assert(max_duration_in_days.get() >= duration_in_days.get()),
         pt.Assert(
             payment_txn.get().amount()
