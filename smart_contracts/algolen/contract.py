@@ -6,7 +6,6 @@ from .data_utils import MappingState, AlgolenListing, AlgolenRent
 
 DAY_IN_SECONDS = 86_400
 LISTING_FEE_MICROALGO = 1_000_000
-MINIMUM_RENT_PER_DAY = 1_000
 
 # this pays for asset transfer to owner
 DELIST_FEE_MICROALGO = 1_000
@@ -59,6 +58,7 @@ def list_nft(
         pt.Assert(price_per_day.get() > pt.Int(0)),
         pt.Assert(deposit.get() > pt.Int(0)),
         pt.Assert(pt.Txn.assets[0] == asset_transfer_txn.get().xfer_asset()),
+        pt.Assert(pt.Not(app.state.rents[pt.Itob(asset_id)].exists())),
         asset_owner.set(pt.Txn.sender()),
         (new_listing := AlgolenListing()).set(
             deposit, price_per_day, max_duration_in_days, asset_owner
@@ -81,6 +81,7 @@ def delist_nft(
         pt.Assert(
             fee_payment_txn.get().receiver() == pt.Global.current_application_address()
         ),
+        pt.Assert(pt.Not(app.state.rents[pt.Itob(asset_id)].exists())),
         pt.Assert(fee_payment_txn.get().amount() == pt.Int(DELIST_FEE_MICROALGO)),
         (app.state.listings[pt.Itob(asset_id)].store_into(listing)),
         (listing.owner.store_into(owner)),
@@ -158,6 +159,7 @@ def rent_nft(
         (listing.max_duration_in_days.store_into(max_duration_in_days)),
         (listing.owner.store_into(asset_owner)),
         (asset_renter.set(pt.Txn.sender())),
+        pt.Assert(duration_in_days.get() > pt.Int(0)),
         pt.Assert(max_duration_in_days.get() >= duration_in_days.get()),
         pt.Assert(
             payment_txn.get().amount()

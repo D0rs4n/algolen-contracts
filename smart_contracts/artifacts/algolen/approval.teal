@@ -189,6 +189,14 @@ frame_dig -4
 gtxns XferAsset
 ==
 assert
+txna Assets 0
+itob
+box_len
+store 1
+store 0
+load 1
+!
+assert
 txn Sender
 frame_bury 1
 frame_dig 1
@@ -230,6 +238,14 @@ gtxns Receiver
 global CurrentApplicationAddress
 ==
 assert
+txna Assets 0
+itob
+box_len
+store 3
+store 2
+load 3
+!
+assert
 frame_dig -1
 gtxns Amount
 pushint 1000 // 1000
@@ -238,11 +254,11 @@ assert
 txna Assets 0
 itob
 box_get
-store 1
-store 0
-load 1
+store 5
+store 4
+load 5
 assert
-load 0
+load 4
 frame_bury 1
 frame_dig 1
 extract 24 0
@@ -280,21 +296,21 @@ intc_0 // 0
 assert
 txna Assets 0
 asset_params_get AssetDecimals
-store 3
-store 2
-load 3
+store 7
+store 6
+load 7
 assert
-load 2
+load 6
 intc_0 // 0
 ==
 assert
 txna Assets 0
 asset_params_get AssetTotal
-store 5
-store 4
-load 5
+store 9
+store 8
+load 9
 assert
-load 4
+load 8
 intc_1 // 1
 ==
 assert
@@ -345,11 +361,11 @@ dup
 txna Assets 0
 itob
 box_get
-store 7
-store 6
-load 7
+store 11
+store 10
+load 11
 assert
-load 6
+load 10
 frame_bury 1
 frame_dig 1
 intc_0 // 0
@@ -372,6 +388,10 @@ frame_dig 6
 len
 pushint 32 // 32
 ==
+assert
+frame_dig -1
+intc_0 // 0
+>
 assert
 frame_dig 4
 frame_dig -1
@@ -457,11 +477,11 @@ assert
 txna Assets 0
 itob
 box_get
-store 9
-store 8
-load 9
+store 13
+store 12
+load 13
 assert
-load 8
+load 12
 frame_bury 1
 frame_dig 1
 intc_3 // 8
@@ -518,11 +538,11 @@ bytec_0 // ""
 txna Assets 0
 itob
 box_get
-store 11
-store 10
-load 11
+store 15
+store 14
+load 15
 assert
-load 10
+load 14
 frame_bury 1
 frame_dig 1
 intc_3 // 8
