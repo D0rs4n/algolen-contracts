@@ -56,6 +56,8 @@ def list_nft(
     asset_id = pt.Txn.assets[0]
     asset_owner = pt.abi.make(pt.abi.Address)
     return pt.Seq(
+        pt.Assert(price_per_day.get() > pt.Int(0)),
+        pt.Assert(deposit.get() > pt.Int(0)),
         pt.Assert(pt.Txn.assets[0] == asset_transfer_txn.get().xfer_asset()),
         asset_owner.set(pt.Txn.sender()),
         (new_listing := AlgolenListing()).set(

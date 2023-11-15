@@ -176,6 +176,14 @@ intc_0 // 0
 dup
 bytec_0 // ""
 dup
+frame_dig -2
+intc_0 // 0
+>
+assert
+frame_dig -3
+intc_0 // 0
+>
+assert
 txna Assets 0
 frame_dig -4
 gtxns XferAsset
